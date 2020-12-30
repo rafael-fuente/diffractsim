@@ -21,25 +21,25 @@ To perform the simulations, just run from the folder proyect in the command prom
 
 
 ```
-python hexagon_monochromatic
+python hexagon_monochromatic.py
 ```
 
 ![N|Solid](/images/hexagon_monochromatic.png)
 
 ```
-python hexagon_polychromatic
+python hexagon_polychromatic.py
 ```
 
 ![N|Solid](/images/hexagon_polychromatic.png)
 
 ```
-python rectangular_grating_small.png
+python rectangular_grating_small.py
 ```
 
 ![N|Solid](/images/rectangular_grating_small.png)
 
 ```
-python circular_rings
+python circular_rings.py
 ```
 
 ![N|Solid](/images/circular_rings.png)
