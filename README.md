@@ -48,12 +48,10 @@ python rectangular_grating.py
 python circular_rings.py
 ```
 
-![N|Solid](/images/text.png)
+![N|Solid](/images/circular_rings.png)
 
 ```
 python text.py
 ```
 
-![N|Solid](/images/circular_rings.png)
-
-(writting in progress)
+![N|Solid](/images/text.png)
