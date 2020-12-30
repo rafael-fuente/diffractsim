@@ -36,7 +36,7 @@ python hexagon_polychromatic.py
 python rectangular_grating_small.py
 ```
 
-![N|Solid](/images/hexagon_polychromatic.png)
+![N|Solid](/images/rectangular_grating_small.png)
 
 ```
 python rectangular_grating.py
