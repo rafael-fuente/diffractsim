@@ -166,3 +166,27 @@ def spec_to_sRGB(spec):
     XYZ = spec_to_XYZ(spec)
     return XYZ_to_sRGB(XYZ)
 
+
+
+
+
+def wavelength_to_XYZ(wavelength, intensity):
+
+    Δλ = (780-380)/(len(λ_list)-1)
+
+    if (wavelength > 380) and (wavelength < 780):
+        X = intensity * cs_x(wavelength) * Δλ *0.003975 * 683.002
+        Y = intensity * cs_y(wavelength) * Δλ *0.003975 * 683.002
+        Z = intensity * cs_z(wavelength) * Δλ *0.003975 * 683.002
+    else:
+        X = intensity * 0.0
+        Y = intensity * 0.0
+        Z = intensity * 0.0
+
+    return np.array([X,Y,Z])
+
+
+def wavelength_to_sRGB(wavelength, intensity):
+
+    XYZ = wavelength_to_XYZ(wavelength, intensity)
+    return XYZ_to_sRGB(XYZ)

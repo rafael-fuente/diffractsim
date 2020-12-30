@@ -122,7 +122,7 @@ class MonochromaticField():
         E = ifft2(ifftshift(c*np.exp(1j*kz * z)))
 
         # compute Field Intensity
-        self.I = np.real(E*np.conjugate(E))
+        self.I = np.real(E*np.conjugate(E))*0.1
 
         # compute RGB colors
         rgb = cf.wavelength_to_sRGB(self.λ/nm, 10*self.I.flatten()).T.reshape((self.Ny,self.Nx,3))

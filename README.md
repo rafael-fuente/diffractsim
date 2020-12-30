@@ -2,4 +2,46 @@
 
 Implementation of the Angular Spectrum method in Python to simulate arbitrary Diffraction Patterns
 
-How the method and the simulator work is described in this Article. Take a look to the Youtube video to see more simulations!
+How the method and the simulator work is described in this Article. Take a look to the Youtube video to see the animated simulations!
+
+
+## Installation
+
+Just clone or download this repo.
+The package requeriments are:
+
+1. numpy
+2. matplotlib
+3. progressbar
+4. scipy
+
+## Examples
+
+To perform the simulations, just run from the folder proyect in the command prompt the corresponding Python scripts:
+
+
+```
+python hexagon_monochromatic
+```
+
+![N|Solid](/images/hexagon_monochromatic.png)
+
+```
+python hexagon_polychromatic
+```
+
+![N|Solid](/images/hexagon_polychromatic.png)
+
+```
+python rectangular_grating_small.png
+```
+
+![N|Solid](/images/rectangular_grating_small.png)
+
+```
+python circular_rings
+```
+
+![N|Solid](/images/circular_rings.png)
+
+(writting in progress)

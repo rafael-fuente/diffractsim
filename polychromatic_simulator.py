@@ -103,7 +103,7 @@ class PolychromaticField():
 
         
         
-    def compute_colors_at(self,z, spectrum_divisions = 40,grid_divisions = 8):
+    def compute_colors_at(self,z, spectrum_divisions = 40,grid_divisions = 10):
         
 
         self.z = z
@@ -150,62 +150,25 @@ class PolychromaticField():
         rgb = cf.sRGB_linear_to_sRGB(sRGB_linear)
         rgb = (rgb.T).reshape((self.Ny,self.Nx,3))
         return rgb
-        
-    def image_gen(self,simulation_name, time, max_distance, start = 0, figsize=(6,6), xlim = None, ylim = None, fps = 60, grid_divisions = 4, spec_start = 30, spec_end = 30):
+
+    def plot(self,rgb, figsize=(6,6), xlim = None, ylim = None):
         plt.style.use('dark_background')
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(1,1,1)  
 
-        
-        number_of_frames = int(np.round(time*fps))
-        dz = (max_distance - 0)/number_of_frames
-        ds = (spec_end - spec_start)/number_of_frames
-
-        from pathlib import Path
-        import time
-
-        try:
-            Path("./frames_"+simulation_name).mkdir()
-
-        except FileExistsError:
-            pass
-        
-        z = dz*start
-        spec = spec_start + ds*start
-
-        for i in range(start, number_of_frames):
-                 
-            t0 = time.time()
-            rgb = self.compute_colors_at(z,grid_divisions = grid_divisions, spectrum_divisions = int(np.round(spec)))
+        if xlim != None:
+            ax.set_xlim(xlim)
             
-            
-            ax.clear()
+        if ylim != None:
+            ax.set_ylim(ylim)
+        ax.set_xlabel('[mm]')
+        ax.set_ylabel('[mm]')
 
+        ax.set_title("Screen distance = " + str(self.z*100) + " cm")
+        ax.set_aspect('equal')
 
-            if xlim != None:
-                ax.set_xlim(xlim)
+        im = ax.imshow((rgb),  extent = [-self.extent_x/2/mm, self.extent_x/2/mm, -self.extent_y/2/mm, self.extent_y/2/mm],  interpolation='spline36')
+        plt.show()
 
-            if ylim != None:
-                ax.set_ylim(ylim)
-                
-
-            ax.set_xlabel('[mm]',fontsize=17, labelpad =  14)
-            ax.set_ylabel('[mm]',fontsize=17)
-            plt.xticks(fontsize=15)
-            plt.yticks(fontsize=15)
-            ax.xaxis.set_tick_params(length=4)
-            ax.yaxis.set_tick_params(length=4)
-            
-            rounded_distance = int(np.round(z*100))
-            ax.set_title("Screen distance = " + str(rounded_distance) + " cm",fontsize=21, pad=15)
-
-            im = ax.imshow((rgb),  extent = [-self.extent_x/2/mm, self.extent_x/2/mm, -self.extent_y/2/mm, self.extent_y/2/mm],  interpolation='spline36')
-
-            fig.savefig("./frames_"+simulation_name+"/"+str(i)+'.png')
-            
-            print(i)
-            z += dz
-            spec += ds
-            print ("Took", time.time() - t0)
 
