@@ -1,6 +1,6 @@
 # Angular-Spectrum-Method
 
-Implementation of the Angular Spectrum method in Python to simulate Diffraction Patterns with arbitrary apertures and spectrums.
+Implementation of the Angular Spectrum method in Python to simulate Diffraction Patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light also with arbitrary spectrums.
 
 How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 
@@ -36,7 +36,13 @@ python hexagon_polychromatic.py
 python rectangular_grating_small.py
 ```
 
-![N|Solid](/images/rectangular_grating_small.png)
+![N|Solid](/images/hexagon_polychromatic.png)
+
+```
+python rectangular_grating.py
+```
+
+![N|Solid](/images/rectangular_grating.png)
 
 ```
 python circular_rings.py
