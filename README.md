@@ -2,7 +2,7 @@
 
 Implementation of the Angular Spectrum method in Python to simulate arbitrary Diffraction Patterns
 
-How the method and the simulator work is described in this Article. Take a look to the Youtube video to see the animated simulations!
+How the method and the simulator work is described in this Article. Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 
 
 ## Installation
