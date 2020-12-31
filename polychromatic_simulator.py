@@ -64,6 +64,7 @@ class PolychromaticField():
         # If pad is specified, we add zeros (black color) padded to the edges of each axis.
 
         img = Image.open(Path(path))
+        img = img.convert('RGB')
         imgRGB = np.asarray(img)/256.
         imgR = imgRGB[:,:,0]
         imgG = imgRGB[:,:,1]
