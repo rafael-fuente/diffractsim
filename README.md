@@ -7,13 +7,9 @@ How the method and the simulator work is described in this [Article](https://raf
 
 ## Installation
 
-Just clone or download this repo.
-The package requeriments are:
+1. Clone repository
+2. Install requirements via `pip install -r requirements.txt`
 
-1. numpy
-2. matplotlib
-3. progressbar
-4. scipy
 
 ## Examples
 
