@@ -1,4 +1,4 @@
-from simulator import PolychromaticField, cf, mm
+from simulator import PolychromaticField, cf, mm, cm
 
 F = PolychromaticField(
     spectrum=1.5 * cf.illuminant_d65,
@@ -11,5 +11,5 @@ F = PolychromaticField(
 F.add_aperture_from_image(
     "./apertures/circular_rings.jpg", pad=(9 * mm, 9 * mm), Nx=1500, Ny=1500
 )
-rgb = F.compute_colors_at(z=1.5)
+rgb = F.compute_colors_at(150*cm)
 F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])

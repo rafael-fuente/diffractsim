@@ -7,6 +7,8 @@ from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
 
+m = 1.
+cm = 1e-2
 mm = 1e-3
 nm = 1e-9
 

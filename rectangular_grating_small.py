@@ -1,4 +1,4 @@
-from simulator import PolychromaticField, cf, mm
+from simulator import PolychromaticField, cf, mm, cm
 
 F = PolychromaticField(
     spectrum=10 * cf.illuminant_d65,
@@ -14,5 +14,5 @@ F.add_aperture_from_image(
     Nx=1600,
     Ny=1600,
 )
-rgb = F.compute_colors_at(z=1.0)
+rgb = F.compute_colors_at(100*cm)
 F.plot(rgb, xlim=[-7, 7], ylim=[-7, 7])
