@@ -1,4 +1,4 @@
-# Angular-Spectrum-Method
+# Diffraction Simulations - Angular Spectrum Method
 
 Implementation of the Angular Spectrum method in Python to simulate Diffraction Patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light also with arbitrary spectrums.
 
