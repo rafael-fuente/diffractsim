@@ -108,7 +108,6 @@ class MonochromaticField:
             self.E = np.pad(self.E, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
-            print(scale_ratio)
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
             self.Ny = self.E.shape[0] if Ny is None else Ny
             self.extent_x += 2 * pad[0]

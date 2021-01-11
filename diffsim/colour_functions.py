@@ -1,9 +1,10 @@
 import numpy as np
 from scipy.interpolate import CubicSpline
+from pathlib import Path
 
 # import CIE XYZ standard observer color matching functions
-cmf = np.loadtxt("cie-cmf.txt", usecols=(1, 2, 3))
-λ_list = np.loadtxt("cie-cmf.txt", usecols=(0))
+cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols=(1, 2, 3))
+λ_list = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols=(0))
 
 # cubic spline of CIE XYZ standard observer color matching functions
 cs_x = CubicSpline(λ_list, cmf.T[0], bc_type="natural")
@@ -11,8 +12,8 @@ cs_y = CubicSpline(λ_list, cmf.T[1], bc_type="natural")
 cs_z = CubicSpline(λ_list, cmf.T[2], bc_type="natural")
 
 # import illuminant_d65 spectrum
-illuminant_d65 = np.loadtxt("illuminant_d65.txt", usecols=(1))
-λ_list = np.loadtxt("illuminant_d65.txt", usecols=(0))
+illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
+λ_list = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(0))
 illuminant_d65_spline = CubicSpline(λ_list, illuminant_d65, bc_type="natural")
 
 

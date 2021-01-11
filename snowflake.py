@@ -1,4 +1,4 @@
-from simulator import PolychromaticField, cf, mm, cm
+from diffsim import PolychromaticField, cf, mm, cm
 
 F = PolychromaticField(
     spectrum=6 * cf.illuminant_d65, extent_x=12 * mm, extent_y=12 * mm, Nx=800, Ny=800

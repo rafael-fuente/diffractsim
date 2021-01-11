@@ -1,5 +1,4 @@
-from simulator import PolychromaticField, cf, mm, cm
-from pathlib import Path
+from diffsim import PolychromaticField, cf, mm, cm
 
 
 F = PolychromaticField(
@@ -7,7 +6,7 @@ F = PolychromaticField(
 )
 
 F.add_aperture_from_image(
-    Path("./apertures/hexagon.jpg"), pad=(10 * mm, 10 * mm), Nx=1400, Ny=1400
+    "./apertures/hexagon.jpg", pad=(10 * mm, 10 * mm), Nx=1400, Ny=1400
 )
 
 rgb = F.compute_colors_at(z=80*cm, spectrum_divisions=40, grid_divisions=10)
