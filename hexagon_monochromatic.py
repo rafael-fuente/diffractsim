@@ -1,4 +1,4 @@
-from diffsim import MonochromaticField, mm, nm, cm
+from diffractsim import MonochromaticField, mm, nm, cm
 
 F = MonochromaticField(
     wavelength=632.8 * nm, extent_x=5.6 * mm, extent_y=5.6 * mm, Nx=500, Ny=500

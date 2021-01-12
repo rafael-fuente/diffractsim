@@ -1,4 +1,4 @@
-from diffsim import PolychromaticField, cf, mm, cm
+from diffractsim import PolychromaticField, cf, mm, cm
 
 
 F = PolychromaticField(

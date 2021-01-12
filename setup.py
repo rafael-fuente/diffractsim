@@ -5,16 +5,18 @@ with open("readme.md", "r") as file:
 
 
 setup(
-    name='diffsim',
+    name='diffractsim',
     version='1.1.0',
     description='Implementation of the Angular Spectrum method in Python to simulate Diffraction Patterns',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method',
     download_url='https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/archive/main.zip',
     keywords = ['diffraction', 'angular spectrum method', 'optics', 'physics simulation'],
     author='Rafael de la Fuente',
     author_email='rafael.fuente.herrezuelo@gmail.com',
     license='MIT',
-    packages=['diffsim'],
+    packages=['diffractsim'],
     install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar'],
     classifiers=[
         # How mature is this project? Common values are
