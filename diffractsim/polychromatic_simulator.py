@@ -28,31 +28,52 @@ class PolychromaticField:
         self.E = np.ones((int(self.Ny), int(self.Nx)))
         self.spectrum = spectrum
 
+        self.lens = False
+        self.lens_f = 0.
+
     def add_rectangular_slit(self, x0, y0, width, height):
         """
         Creates a slit centered at the point (x0, y0) with width width and height height
         """
-        self.E = np.select(
+        t = np.select(
             [
                 ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
                 & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
                 True,
             ],
-            [self.E, 0],
+            [1, 0],
         )
+        self.E = self.E*t
 
     def add_circular_slit(self, x0, y0, R):
         """
-        Crea una rendija centrada en el punto (x0,y0) con anchura lx y altura ly
+        Creates a circular slit centered at the point (x0,y0) with radius R
         """
 
-        self.E = np.select(
-            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, True], [self.E, 0]
+        t = np.select(
+            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, True], [1, 0]
         )
+        self.E = self.E*t
+
+
+
+    def add_gaussian_beam(self, w0):
+        """
+        Creates a Gaussian beam with radius equal to w0
+        """
+
+        r2 = self.xx**2 + self.yy**2 
+        self.E = self.E*np.exp(-r2/(w0**2))
+
+
 
     def add_diffraction_grid(self, D, a, Nx, Ny):
+        """
+        Creates a diffraction_grid with Nx *  Ny slits with separation distance D and width a
+        """
+
         E0 = np.copy(self.E)
-        Ef = 0
+        t = 0
 
         b = D - a
         width, height = Nx * a + (Nx - 1) * b, Ny * a + (Ny - 1) * b
@@ -63,17 +84,19 @@ class PolychromaticField:
             y0 = height / 2 - a / 2
             for _ in range(Ny):
 
-                Ef += np.select(
+                t += np.select(
                     [
                         ((self.xx > (x0 - a / 2)) & (self.xx < (x0 + a / 2)))
                         & ((self.yy > (y0 - a / 2)) & (self.yy < (y0 + a / 2))),
                         True,
                     ],
-                    [E0, 0],
+                    [1, 0],
                 )
                 y0 -= D
             x0 += D
-        self.E = Ef
+        self.E = self.E*t
+
+
 
     def add_aperture_from_image(self, path, pad=None, Nx=None, Ny=None):
         # This function load the image specified at "path" as a numpy graymap array.
@@ -86,23 +109,28 @@ class PolychromaticField:
         imgR = imgRGB[:, :, 0]
         imgG = imgRGB[:, :, 1]
         imgB = imgRGB[:, :, 2]
-        self.E = 0.2989 * imgR + 0.5870 * imgG + 0.1140 * imgB
+        t = 0.2989 * imgR + 0.5870 * imgG + 0.1140 * imgB
 
         fun = interp2d(
-            np.linspace(0, 1, self.E.shape[1]),
-            np.linspace(0, 1, self.E.shape[0]),
-            self.E,
+            np.linspace(0, 1, t.shape[1]),
+            np.linspace(0, 1, t.shape[0]),
+            t,
             kind="cubic",
         )
-        self.E = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
+        t = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
+        self.E = self.E * t
 
+        # optional: add zeros and interpolate to the new specified resolution
         if pad != None:
 
             Nxpad = int(np.round(self.Nx / self.extent_x * pad[0]))
             Nypad = int(np.round(self.Ny / self.extent_y * pad[1]))
             self.E = np.pad(self.E, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
+            t = np.pad(t, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
+
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
+            print(scale_ratio)
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
             self.Ny = self.E.shape[0] if Ny is None else Ny
             self.extent_x += 2 * pad[0]
@@ -116,15 +144,31 @@ class PolychromaticField:
             )
             self.E = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
 
+        # grid units
         self.x = np.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
         self.y = np.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
-        self.xx, self.yy = np.meshgrid(self.x, self.y)
+        self.xx, self.yy = np.meshgrid(self.x, self.y)  
+
+    def add_lens(self, f):
+        """add a thin lens with a focal length equal to f """
+        self.lens = True
+        self.lens_f = f
+
+    def propagate(self, z, spectrum_divisions=40, grid_divisions=10):
+
+        raise NotImplementedError(self.__class__.__name__ + '.propagate')
+
+    def get_colors(self):
+
+        raise NotImplementedError(self.__class__.__name__ + '.get_colors')
+
+
 
     def compute_colors_at(self, z, spectrum_divisions=40, grid_divisions=10):
+        """propagate the field to a distance equal to z and compute the RGB colors of the beam profile profile"""
 
         self.z = z
-        fft_c = fft2(self.E)
-        c = fftshift(fft_c)
+
         kx = np.linspace(
             -np.pi * self.Nx // 2 / (self.extent_x / 2),
             np.pi * self.Nx // 2 / (self.extent_x / 2),
@@ -141,11 +185,22 @@ class PolychromaticField:
         sRGB_linear = np.zeros((3, self.Nx * self.Ny))
         λ_list_samples = np.arange(380, 780, dλ)
 
+        if self.lens == False:
+            fft_c = fft2(self.E)
+            c = fftshift(fft_c)
+            # if not is computed in the loop
+
+
         bar = progressbar.ProgressBar()
 
         # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
         # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
         for i in bar(range(spectrum_divisions)):
+            if self.lens == True:
+                fft_c = fft2(self.E * np.exp(-1j*np.pi/(λ_list_samples[i]* nm * self.lens_f) * (self.xx**2 + self.yy**2)))
+                c = fftshift(fft_c)
+                # if not is computed in the loop
+
 
             kz = np.sqrt(
                 (2 * np.pi / (λ_list_samples[i] * nm)) ** 2 - kx ** 2 - ky ** 2
