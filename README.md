@@ -53,3 +53,7 @@ python text.py
 ```
 
 ![N|Solid](/images/text.png)
+
+
+For simulating diffraction patterns with lenses, take a look at [these examples](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
+

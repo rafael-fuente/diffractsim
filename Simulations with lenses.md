@@ -1,7 +1,7 @@
 # Diffraction Simulations with Lenses
 
 Implementation of the Angular Spectrum method in Python to simulate Diffraction Patterns with arbitrary apertures.
-These examples correspond to the simulations with lenses, whose animated version and explanation can be found here:
+These examples correspond to the simulations with lenses, whose animated version and explanation can be found in [this video](https://www.youtube.com/watch?v=G4J4PV6tqH0).
 
 ## Installation
 
