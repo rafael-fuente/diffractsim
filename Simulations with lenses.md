@@ -23,7 +23,7 @@ python hexagonal_aperture_lens.py
 python circular_aperture_lens.py
 ```
 
-![N|Solid](/images/circle_with_lens.png)
+![N|Solid](/images/circular_aperture_lens.png)
 
 ```
 python beyond_the_focal_length.py
