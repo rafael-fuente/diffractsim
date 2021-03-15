@@ -8,14 +8,13 @@ How the method and the simulator work is described in this [Article](https://raf
 
 
 ## Installation
-
-1. Clone repository
-2. Install requirements via `pip install -r requirements.txt`
-
+```
+pip install diffractsim
+```
 
 ## Examples
 
-To perform the simulations, just run from the folder proyect in the command prompt the corresponding Python scripts:
+To perform the simulations, just run from the examples folder the corresponding Python scripts in the command prompt:
 
 
 ```

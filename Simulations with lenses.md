@@ -5,12 +5,12 @@ These examples correspond to the simulations with lenses, whose animated version
 
 ## Installation
 
-1. Clone repository
-2. Install requirements via `pip install -r requirements.txt`
-
+```
+pip install diffractsim
+```
 ## Simulations
 
-To perform the simulations, just run from the folder proyect in the command prompt the corresponding Python scripts:
+To perform the simulations, just run from the examples folder the corresponding Python scripts in the command prompt:
 
 
 ```
@@ -36,6 +36,12 @@ python bahtinov_mask.py
 ```
 
 ![N|Solid](/images/bahtinov_mask.png)
+
+```
+python optical_imaging_system.py
+```
+
+![N|Solid](/images/optical_imaging_system.png)
 
 ```
 python object_behind_the_lens.py
