@@ -9,7 +9,10 @@ F.add_aperture_from_image(
 )
 
 F.propagate(50*cm)
+
 F.add_lens(f = 25*cm)
+F.add_circular_slit( 0, 0, 6*mm) # we model the entrance pupil of the lens as a circular aperture
+
 F.propagate(50*cm)
 
 

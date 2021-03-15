@@ -8,6 +8,7 @@ These examples correspond to the simulations with lenses, whose animated version
 ```
 pip install diffractsim
 ```
+
 ## Simulations
 
 To perform the simulations, just run from the examples folder the corresponding Python scripts in the command prompt:
