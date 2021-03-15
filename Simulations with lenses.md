@@ -36,13 +36,13 @@ python beyond_the_focal_length.py
 python bahtinov_mask.py
 ```
 
-![N|Solid](/images/bahtinov_mask.png)
+![![animation]](/images/bahtinov_mask.gif)
 
 ```
 python optical_imaging_system.py
 ```
 
-![N|Solid](/images/optical_imaging_system.png)
+![![animation]](/images/optical_imaging_system.gif)
 
 ```
 python object_behind_the_lens.py
