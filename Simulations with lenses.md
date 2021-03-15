@@ -48,10 +48,10 @@ python optical_imaging_system.py
 python object_behind_the_lens.py
 ```
 
-![N|Solid](/images/object_behind_the_lens.png)
+![![animation]](/images/object_behind_the_lens.gif)
 
 ```
 python spatial_filter.py
 ```
 
-![N|Solid](/images/spatial_filter.png)
+![![animation]](/images/spatial_filter.gif)
