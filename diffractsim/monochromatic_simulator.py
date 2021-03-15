@@ -10,13 +10,24 @@ from PIL import Image
 m = 1.
 cm = 1e-2
 mm = 1e-3
+um = 1e-6
 nm = 1e-9
 
 
 class MonochromaticField:
-    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, power = 0.1):
+    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1):
+        """
+        Initializes the field, representing the cross-section profile of a plane wave
 
-        self.power = power
+        Parameters
+        ----------
+        wavelength: wavelength of the plane wave
+        extent_x: length of the rectangular grid 
+        extent_y: height of the rectangular grid 
+        Nx: horizontal dimension of the grid 
+        Ny: vertical dimension of the grid 
+        intensity: intensity of the field
+        """
 
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -27,7 +38,7 @@ class MonochromaticField:
 
         self.Nx = np.int(Nx)
         self.Ny = np.int(Ny)
-        self.E = np.ones((int(self.Ny), int(self.Nx)))
+        self.E = np.ones((int(self.Ny), int(self.Nx))) * np.sqrt(intensity)
         self.λ = wavelength
         self.z = 0
         cf.clip_method = 0
@@ -45,7 +56,7 @@ class MonochromaticField:
             [1, 0],
         )
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power 
+        self.I = np.real(self.E * np.conjugate(self.E))  
 
     def add_circular_slit(self, x0, y0, R):
         """
@@ -56,7 +67,7 @@ class MonochromaticField:
             [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, True], [1, 0]
         )
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power 
+        self.I = np.real(self.E * np.conjugate(self.E))  
 
 
 
@@ -67,7 +78,7 @@ class MonochromaticField:
 
         r2 = self.xx**2 + self.yy**2 
         self.E = self.E*np.exp(-r2/(w0**2))
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power 
+        self.I = np.real(self.E * np.conjugate(self.E))  
 
 
 
@@ -99,14 +110,16 @@ class MonochromaticField:
                 y0 -= D
             x0 += D
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power 
+        self.I = np.real(self.E * np.conjugate(self.E))  
 
 
 
     def add_aperture_from_image(self, path, pad=None, Nx=None, Ny=None):
-        # This function load the image specified at "path" as a numpy graymap array.
-        # If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
-        # If pad is specified, we add zeros (black color) padded to the edges of each axis.
+        """
+        Load the image specified at "path" as a numpy graymap array.
+        - If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
+        - If pad is specified, we add zeros (black color) padded to the edges of each axis.
+        """
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
@@ -135,7 +148,6 @@ class MonochromaticField:
 
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
-            print(scale_ratio)
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
             self.Ny = self.E.shape[0] if Ny is None else Ny
             self.extent_x += 2 * pad[0]
@@ -154,7 +166,7 @@ class MonochromaticField:
         self.y = np.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
         self.xx, self.yy = np.meshgrid(self.x, self.y)  
         # compute Field Intensity
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power 
+        self.I = np.real(self.E * np.conjugate(self.E))  
 
 
     def add_lens(self, f):
@@ -190,10 +202,10 @@ class MonochromaticField:
         self.E = E
 
         # compute Field Intensity
-        self.I = np.real(E * np.conjugate(E)) * self.power 
+        self.I = np.real(E * np.conjugate(E))  
 
     def get_colors(self):
-        # compute RGB colors
+        """ compute RGB colors"""
 
         rgb = cf.wavelength_to_sRGB(self.λ / nm, 10 * self.I.flatten()).T.reshape(
             (self.Ny, self.Nx, 3)
@@ -209,6 +221,8 @@ class MonochromaticField:
         return rgb
 
     def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
+        """visualize the diffraction pattern with matplotlib"""
+
         plt.style.use("dark_background")
 
         fig = plt.figure(figsize=figsize)
@@ -267,4 +281,4 @@ class MonochromaticField:
             E_noise += random_noise(self.xx,self.yy,f_mean,A)/np.sqrt(N)
 
         self.E += E_noise *np.exp(-(self.xx**2 + self.yy**2)/ (noise_radius)**2)
-        self.I = np.real(self.E * np.conjugate(self.E)) * self.power
+        self.I = np.real(self.E * np.conjugate(self.E)) 

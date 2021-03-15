@@ -1,7 +1,7 @@
 from diffractsim import MonochromaticField, nm, mm, cm
 
 F = MonochromaticField(
-    wavelength=488 * nm, extent_x=19. * mm, extent_y=19. * mm, Nx=2000, Ny=2000,power = 0.2
+    wavelength=488 * nm, extent_x=19. * mm, extent_y=19. * mm, Nx=2000, Ny=2000,intensity = 0.2
 )
 
 

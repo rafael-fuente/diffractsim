@@ -10,6 +10,7 @@ from PIL import Image
 m = 1.
 cm = 1e-2
 mm = 1e-3
+um = 1e-6
 nm = 1e-9
 
 
@@ -30,6 +31,7 @@ class PolychromaticField:
 
         self.lens = False
         self.lens_f = 0.
+        self.z = 0
 
     def add_rectangular_slit(self, x0, y0, width, height):
         """
@@ -99,9 +101,11 @@ class PolychromaticField:
 
 
     def add_aperture_from_image(self, path, pad=None, Nx=None, Ny=None):
-        # This function load the image specified at "path" as a numpy graymap array.
-        # If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
-        # If pad is specified, we add zeros (black color) padded to the edges of each axis.
+        """
+        Load the image specified at "path" as a numpy graymap array.
+        - If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
+        - If pad is specified, we add zeros (black color) padded to the edges of each axis.
+        """
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
@@ -130,7 +134,6 @@ class PolychromaticField:
 
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
-            print(scale_ratio)
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
             self.Ny = self.E.shape[0] if Ny is None else Ny
             self.extent_x += 2 * pad[0]
@@ -154,17 +157,8 @@ class PolychromaticField:
         self.lens = True
         self.lens_f = f
 
-    def propagate(self, z, spectrum_divisions=40, grid_divisions=10):
 
-        raise NotImplementedError(self.__class__.__name__ + '.propagate')
-
-    def get_colors(self):
-
-        raise NotImplementedError(self.__class__.__name__ + '.get_colors')
-
-
-
-    def compute_colors_at(self, z, spectrum_divisions=40, grid_divisions=10):
+    def compute_colors_at(self, z, spectrum_divisions=30, grid_divisions=10):
         """propagate the field to a distance equal to z and compute the RGB colors of the beam profile profile"""
 
         self.z = z
@@ -230,6 +224,7 @@ class PolychromaticField:
         return rgb
 
     def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
+        """visualize the diffraction pattern with matplotlib"""
         plt.style.use("dark_background")
 
         fig = plt.figure(figsize=figsize)
@@ -257,3 +252,16 @@ class PolychromaticField:
             interpolation="spline36",
         )
         plt.show()
+
+
+    def propagate(self, z, spectrum_divisions=40, grid_divisions=10):
+
+        raise NotImplementedError(self.__class__.__name__ + '.propagate')
+
+    def get_colors(self):
+
+        raise NotImplementedError(self.__class__.__name__ + '.get_colors')
+
+    def add_spatial_noise(self, noise_radius, f_mean, f_size, N = 30, A = 1):
+
+        raise NotImplementedError(self.__class__.__name__ + '.add_spatial_noise')
