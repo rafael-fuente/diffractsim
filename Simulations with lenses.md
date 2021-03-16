@@ -18,40 +18,40 @@ To perform the simulations, just run from the examples folder the corresponding 
 python hexagonal_aperture_lens.py
 ```
 
-![![animation]](/images/hexagon_with_lens.gif)
+![![animation]](/images/hexagon_with_lens.gif)(https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/hexagonal_aperture_lens.py)
 
 ```
 python circular_aperture_lens.py
 ```
 
-![![animation]](/images/circular_aperture_lens.gif)
+![![animation]](/images/circular_aperture_lens.gif)(https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/circular_aperture_lens.py)
 
 ```
 python beyond_the_focal_length.py
 ```
 
-![![animation]](/images/beyond_the_focal_length.gif)
+![![animation]](/images/beyond_the_focal_length.gif)(https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/beyond_the_focal_length.py)
 
 ```
 python bahtinov_mask.py
 ```
 
-![![animation]](/images/bahtinov_mask.gif)
+![![animation]](/images/bahtinov_mask.gif)(https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/bahtinov_mask.py)
 
 ```
 python optical_imaging_system.py
 ```
 
-![![animation]](/images/optical_imaging_system.gif)
+![![animation]](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/optical_imaging_system.py)
 
 ```
 python object_behind_the_lens.py
 ```
 
-![![animation]](/images/object_behind_the_lens.gif)
+![![animation]](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/object_behind_the_lens.py)
 
 ```
 python spatial_filter.py
 ```
 
-![![animation]](/images/spatial_filter.gif)
+![![animation]](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/spatial_filter.py)
