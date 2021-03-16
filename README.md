@@ -14,7 +14,7 @@ pip install diffractsim
 
 ## Examples
 
-To perform the simulations, just run from the examples folder the corresponding Python scripts in the command prompt:
+To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt:
 
 
 ```
