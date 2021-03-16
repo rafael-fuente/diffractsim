@@ -9,7 +9,7 @@ These examples correspond to the simulations with lenses, whose explanation can 
 pip install diffractsim
 ```
 
-Alternatively, to download the examples and openings as well, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
+Alternatively, to download the examples and the apertures as well, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
 ```
 pip install .
 ```
