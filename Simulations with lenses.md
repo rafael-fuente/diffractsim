@@ -9,10 +9,14 @@ These examples correspond to the simulations with lenses, whose explanation can 
 pip install diffractsim
 ```
 
+Alternatively, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
+```
+pip install .
+```
+
 ## Simulations
 
 To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt:
-
 
 
 ```
@@ -56,3 +60,5 @@ python beyond_the_focal_length.py
 ```
 
 [![animation](/images/beyond_the_focal_length.gif)](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/examples/beyond_the_focal_length.py)
+
+The scripts uploaded only render the diffraction pattern at a single screen distance. If you want to create an animation, you must loop through the different distances and then merging the rendered frames to a video, for example, using FFmpeg.

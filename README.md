@@ -12,6 +12,11 @@ How the method and the simulator work is described in this [Article](https://raf
 pip install diffractsim
 ```
 
+Alternatively, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
+```
+pip install .
+```
+
 ## Examples
 
 To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt:
