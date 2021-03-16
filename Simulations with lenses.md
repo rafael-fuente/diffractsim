@@ -18,19 +18,19 @@ To perform the simulations, just run from the examples folder the corresponding 
 python hexagonal_aperture_lens.py
 ```
 
-![N|Solid](/images/hexagon_with_lens.png)
+![![animation]](/images/hexagon_with_lens.gif)
 
 ```
 python circular_aperture_lens.py
 ```
 
-![N|Solid](/images/circular_aperture_lens.png)
+![![animation]](/images/circular_aperture_lens.gif)
 
 ```
 python beyond_the_focal_length.py
 ```
 
-![N|Solid](/images/beyond_the_focal_length.png)
+![![animation]](/images/beyond_the_focal_length.gif)
 
 ```
 python bahtinov_mask.py
