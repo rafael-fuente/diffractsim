@@ -1,20 +1,18 @@
 import numpy as np
-from scipy.interpolate import CubicSpline
 from pathlib import Path
 
 # import CIE XYZ standard observer color matching functions
 cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols=(1, 2, 3))
 λ_list = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols=(0))
 
-# cubic spline of CIE XYZ standard observer color matching functions
-cs_x = CubicSpline(λ_list, cmf.T[0], bc_type="natural")
-cs_y = CubicSpline(λ_list, cmf.T[1], bc_type="natural")
-cs_z = CubicSpline(λ_list, cmf.T[2], bc_type="natural")
+# CIE XYZ standard observer color matching functions
+cie_x =  cmf.T[0]
+cie_y =  cmf.T[1]
+cie_z =  cmf.T[2]
 
 # import illuminant_d65 spectrum
 illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
 λ_list = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(0))
-illuminant_d65_spline = CubicSpline(λ_list, illuminant_d65, bc_type="natural")
 
 
 # XYZ to linear sRGB matrix
@@ -129,17 +127,17 @@ def spec_to_XYZ(spec):
         Δλ = (780 - 380) / (spec.shape[0] - 1)
         λ_list = np.arange(380.0, 780.00001, Δλ)
 
-        X = np.dot(spec, cs_x(λ_list)) * Δλ * 0.003975 * 683.002
-        Y = np.dot(spec, cs_y(λ_list)) * Δλ * 0.003975 * 683.002
-        Z = np.dot(spec, cs_z(λ_list)) * Δλ * 0.003975 * 683.002
+        X = np.dot(spec, cie_x) * Δλ * 0.003975 * 683.002
+        Y = np.dot(spec, cie_y) * Δλ * 0.003975 * 683.002
+        Z = np.dot(spec, cie_z) * Δλ * 0.003975 * 683.002
         return np.array([X, Y, Z])
 
     else:
         Δλ = (780 - 380) / (spec.shape[1] - 1)
         λ_list = np.arange(380.0, 780.00001, Δλ)
 
-        cs_xyz = np.array([cs_x(λ_list), cs_y(λ_list), cs_z(λ_list)])
-        return np.tensordot(spec, cs_xyz, axes=([1, 1])).T * Δλ * 0.003975 * 683.002
+        cie_xyz = np.array([cie_x, cie_y, cie_z])
+        return np.tensordot(spec, cie_xyz, axes=([1, 1])).T * Δλ * 0.003975 * 683.002
 
 
 def spec_to_sRGB(spec):
@@ -161,9 +159,10 @@ def wavelength_to_XYZ(wavelength, intensity):
     Δλ = (780 - 380) / (len(λ_list) - 1)
 
     if (wavelength > 380) and (wavelength < 780):
-        X = intensity * cs_x(wavelength) * Δλ * 0.003975 * 683.002
-        Y = intensity * cs_y(wavelength) * Δλ * 0.003975 * 683.002
-        Z = intensity * cs_z(wavelength) * Δλ * 0.003975 * 683.002
+        index = int(wavelength-380)
+        X = intensity * cie_x[index] * Δλ * 0.003975 * 683.002
+        Y = intensity * cie_y[index] * Δλ * 0.003975 * 683.002
+        Z = intensity * cie_z[index] * Δλ * 0.003975 * 683.002
     else:
         X = intensity * 0.0
         Y = intensity * 0.0
