@@ -1,7 +1,7 @@
 from diffractsim import MonochromaticField, nm, mm, cm
 
 F = MonochromaticField(
-    wavelength = 543 * nm, extent_x=13. * mm, extent_y=13. * mm, Nx=3000, Ny=3000, power =0.01
+    wavelength = 543 * nm, extent_x=13. * mm, extent_y=13. * mm, Nx=3000, Ny=3000, intensity =0.01
 )
 
 F.add_circular_slit(0,0, 0.7*mm)
