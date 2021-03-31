@@ -47,7 +47,7 @@ python rectangular_grating.py
 ![N|Solid](/images/rectangular_grating.png)
 
 ```
-python circular_rings.py
+python rings.py
 ```
 
 ![N|Solid](/images/rings.png)
