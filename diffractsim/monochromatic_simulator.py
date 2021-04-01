@@ -1,10 +1,11 @@
 from . import colour_functions as cf
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy.fftpack import fft2, ifft2, fftshift, ifftshift
 from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
+
+import numpy as np
+from .backend_functions import backend as bd
 
 
 m = 1.
@@ -28,46 +29,50 @@ class MonochromaticField:
         Ny: vertical dimension of the grid 
         intensity: intensity of the field
         """
+        global bd
+        from .backend_functions import backend as bd
 
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.x = np.linspace(-extent_x / 2, extent_x / 2, Nx)
-        self.y = np.linspace(-extent_y / 2, extent_y / 2, Ny)
-        self.xx, self.yy = np.meshgrid(self.x, self.y)
+        self.x = bd.linspace(-extent_x / 2, extent_x / 2, Nx)
+        self.y = bd.linspace(-extent_y / 2, extent_y / 2, Ny)
+        self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
-        self.Nx = np.int(Nx)
-        self.Ny = np.int(Ny)
-        self.E = np.ones((int(self.Ny), int(self.Nx))) * np.sqrt(intensity)
+        self.Nx = bd.int(Nx)
+        self.Ny = bd.int(Ny)
+        self.E = bd.ones((int(self.Ny), int(self.Nx))) * bd.sqrt(intensity)
         self.λ = wavelength
         self.z = 0
-        cf.clip_method = 0
+        self.cs = cf.ColourSystem(clip_method = 0)
         
     def add_rectangular_slit(self, x0, y0, width, height):
         """
         Creates a slit centered at the point (x0, y0) with width width and height height
         """
-        t = np.select(
+        t = bd.select(
             [
                 ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
                 & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
                 True,
             ],
-            [1, 0],
+            [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
         )
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E))  
+
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
     def add_circular_slit(self, x0, y0, R):
         """
         Creates a circular slit centered at the point (x0,y0) with radius R
         """
 
-        t = np.select(
-            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, True], [1, 0]
+        t = bd.select(
+            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, bd.full(self.E.shape, True, dtype=bool)], [bd.ones(self.E.shape), bd.zeros(self.E.shape)]
         )
+
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E))  
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
 
@@ -77,8 +82,8 @@ class MonochromaticField:
         """
 
         r2 = self.xx**2 + self.yy**2 
-        self.E = self.E*np.exp(-r2/(w0**2))
-        self.I = np.real(self.E * np.conjugate(self.E))  
+        self.E = self.E*bd.exp(-r2/(w0**2))
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
 
@@ -87,7 +92,7 @@ class MonochromaticField:
         Creates a diffraction_grid with Nx *  Ny slits with separation distance D and width a
         """
 
-        E0 = np.copy(self.E)
+        E0 = bd.copy(self.E)
         t = 0
 
         b = D - a
@@ -99,18 +104,18 @@ class MonochromaticField:
             y0 = height / 2 - a / 2
             for _ in range(Ny):
 
-                t += np.select(
+                t += bd.select(
                     [
                         ((self.xx > (x0 - a / 2)) & (self.xx < (x0 + a / 2)))
                         & ((self.yy > (y0 - a / 2)) & (self.yy < (y0 + a / 2))),
                         True,
                     ],
-                    [1, 0],
+                    [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
                 )
                 y0 -= D
             x0 += D
         self.E = self.E*t
-        self.I = np.real(self.E * np.conjugate(self.E))  
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
 
@@ -120,6 +125,7 @@ class MonochromaticField:
         - If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
         - If pad is specified, we add zeros (black color) padded to the edges of each axis.
         """
+
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
@@ -136,16 +142,18 @@ class MonochromaticField:
             kind="cubic",
         )
         t = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
-        self.E = self.E * t
 
         # optional: add zeros and interpolate to the new specified resolution
         if pad != None:
+
+            if bd != np:
+                self.E = self.E.get()
 
             Nxpad = int(np.round(self.Nx / self.extent_x * pad[0]))
             Nypad = int(np.round(self.Ny / self.extent_y * pad[1]))
             self.E = np.pad(self.E, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
             t = np.pad(t, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
-
+            self.E = np.array(self.E*t)
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
@@ -159,19 +167,24 @@ class MonochromaticField:
                 self.E,
                 kind="cubic",
             )
-            self.E = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
+            self.E = bd.array(fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny)))
 
-        # grid units
-        self.x = np.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
-        self.y = np.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
-        self.xx, self.yy = np.meshgrid(self.x, self.y)  
+            # new grid units
+            self.x = bd.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
+            self.y = bd.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
+            self.xx, self.yy = bd.meshgrid(self.x, self.y)  
+
+        else:
+            self.E = self.E*bd.array(t)
+
+
         # compute Field Intensity
-        self.I = np.real(self.E * np.conjugate(self.E))  
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
     def add_lens(self, f):
         """add a thin lens with a focal length equal to f """
-        self.E = self.E * np.exp(-1j*np.pi/(self.λ*f) * (self.xx**2 + self.yy**2))
+        self.E = self.E * bd.exp(-1j*bd.pi/(self.λ*f) * (self.xx**2 + self.yy**2))
 
 
 
@@ -181,33 +194,33 @@ class MonochromaticField:
         self.z += z
 
         # compute angular spectrum
-        fft_c = fft2(self.E)
-        c = fftshift(fft_c)
+        fft_c = bd.fft.fft2(self.E)
+        c = bd.fft.fftshift(fft_c)
 
-        kx = np.linspace(
-            -np.pi * self.Nx // 2 / (self.extent_x / 2),
-            np.pi * self.Nx // 2 / (self.extent_x / 2),
+        kx = bd.linspace(
+            -bd.pi * self.Nx // 2 / (self.extent_x / 2),
+            bd.pi * self.Nx // 2 / (self.extent_x / 2),
             self.Nx,
         )
-        ky = np.linspace(
-            -np.pi * self.Ny // 2 / (self.extent_y / 2),
-            np.pi * self.Ny // 2 / (self.extent_y / 2),
+        ky = bd.linspace(
+            -bd.pi * self.Ny // 2 / (self.extent_y / 2),
+            bd.pi * self.Ny // 2 / (self.extent_y / 2),
             self.Ny,
         )
-        kx, ky = np.meshgrid(kx, ky)
-        kz = np.sqrt((2 * np.pi / self.λ) ** 2 - kx ** 2 - ky ** 2)
+        kx, ky = bd.meshgrid(kx, ky)
+        kz = bd.sqrt((2 * bd.pi / self.λ) ** 2 - kx ** 2 - ky ** 2)
 
         # propagate the angular spectrum a distance z
-        E = ifft2(ifftshift(c * np.exp(1j * kz * z)))
+        E = bd.fft.ifft2(bd.fft.ifftshift(c * bd.exp(1j * kz * z)))
         self.E = E
 
         # compute Field Intensity
-        self.I = np.real(E * np.conjugate(E))  
+        self.I = bd.real(E * bd.conjugate(E))  
 
     def get_colors(self):
         """ compute RGB colors"""
 
-        rgb = cf.wavelength_to_sRGB(self.λ / nm, 10 * self.I.flatten()).T.reshape(
+        rgb = self.cs.wavelength_to_sRGB(self.λ / nm, 10 * self.I.flatten()).T.reshape(
             (self.Ny, self.Nx, 3)
         )
         return rgb
@@ -224,6 +237,8 @@ class MonochromaticField:
         """visualize the diffraction pattern with matplotlib"""
 
         plt.style.use("dark_background")
+        if bd != np:
+            rgb = rgb.get()
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(1, 1, 1)
@@ -267,18 +282,18 @@ class MonochromaticField:
         """
 
         def random_noise(xx,yy, f_mean,A):
-            A = np.random.rand(1)*A
-            phase = np.random.rand(1)*2*np.pi
-            fangle = np.random.rand(1)*2*np.pi
-            f = np.random.normal(f_mean, f_size/2)
+            A = bd.random.rand(1)*A
+            phase = bd.random.rand(1)*2*bd.pi
+            fangle = bd.random.rand(1)*2*bd.pi
+            f = bd.random.normal(f_mean, f_size/2)
 
-            fx = f*np.cos(fangle) 
-            fy = f*np.sin(fangle) 
-            return A*np.exp((xx**2 + yy**2)/ (noise_radius*2)**2)*np.sin(2*np.pi*fx*xx + 2*np.pi*fy*yy + phase)
+            fx = f*bd.cos(fangle) 
+            fy = f*bd.sin(fangle) 
+            return A*bd.exp((xx**2 + yy**2)/ (noise_radius*2)**2)*bd.sin(2*bd.pi*fx*xx + 2*bd.pi*fy*yy + phase)
 
         E_noise = 0
         for i in range(0,N):
-            E_noise += random_noise(self.xx,self.yy,f_mean,A)/np.sqrt(N)
+            E_noise += random_noise(self.xx,self.yy,f_mean,A)/bd.sqrt(N)
 
-        self.E += E_noise *np.exp(-(self.xx**2 + self.yy**2)/ (noise_radius)**2)
-        self.I = np.real(self.E * np.conjugate(self.E)) 
+        self.E += E_noise *bd.exp(-(self.xx**2 + self.yy**2)/ (noise_radius)**2)
+        self.I = bd.real(self.E * bd.conjugate(self.E)) 

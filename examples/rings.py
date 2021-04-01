@@ -1,3 +1,6 @@
+import diffractsim
+diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU acceleration
+
 from diffractsim import PolychromaticField, cf, mm, cm
 
 F = PolychromaticField(
@@ -6,6 +9,7 @@ F = PolychromaticField(
     extent_y=12.0 * mm,
     Nx=1200,
     Ny=1200,
+    spectrum_size = 200, spectrum_divisions = 40  # increase these values to improve color resolution
 )
 
 F.add_aperture_from_image(

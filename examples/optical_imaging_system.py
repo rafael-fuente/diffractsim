@@ -1,3 +1,6 @@
+import diffractsim
+diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU acceleration
+
 from diffractsim import MonochromaticField, nm, mm, cm
 
 F = MonochromaticField(

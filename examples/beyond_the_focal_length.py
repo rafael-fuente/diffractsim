@@ -1,3 +1,6 @@
+import diffractsim
+diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU acceleration
+
 from diffractsim import MonochromaticField, nm, mm, cm
 
 F = MonochromaticField(
@@ -5,7 +8,7 @@ F = MonochromaticField(
 )
 
 F.add_aperture_from_image(
-    "./apertures/QWT.png", pad=(5 * mm, 5 * mm), Nx=2800, Ny=2800
+    "./apertures/QWT.png", pad=(5 * mm, 5 * mm), Nx=2200, Ny=2200
 )
 
 F.add_lens(f = 50*cm)

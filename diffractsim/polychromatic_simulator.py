@@ -1,11 +1,13 @@
 from . import colour_functions as cf
 import matplotlib.pyplot as plt
-import numpy as np
 import progressbar
-from scipy.fftpack import fft2, ifft2, fftshift, ifftshift
 from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
+import time
+
+import numpy as np
+from .backend_functions import backend as bd
 
 m = 1.
 cm = 1e-2
@@ -14,36 +16,53 @@ um = 1e-6
 nm = 1e-9
 
 
+
+
 class PolychromaticField:
-    def __init__(self, spectrum, extent_x, extent_y, Nx, Ny):
+    def __init__(self, spectrum, extent_x, extent_y, Nx, Ny, spectrum_size = 180, spectrum_divisions = 30):
+        global bd
+        from .backend_functions import backend as bd
 
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.x = np.linspace(-extent_x / 2, extent_x / 2, Nx)
-        self.y = np.linspace(-extent_y / 2, extent_y / 2, Ny)
-        self.xx, self.yy = np.meshgrid(self.x, self.y)
+        self.x = bd.linspace(-extent_x / 2, extent_x / 2, Nx)
+        self.y = bd.linspace(-extent_y / 2, extent_y / 2, Ny)
+        self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
-        self.Nx = np.int(Nx)
-        self.Ny = np.int(Ny)
-        self.E = np.ones((int(self.Ny), int(self.Nx)))
-        self.spectrum = spectrum
+        self.Nx = bd.int(Nx)
+        self.Ny = bd.int(Ny)
+        self.E = bd.ones((int(self.Ny), int(self.Nx)))
+
+        if spectrum_size == 400: 
+            self.spectrum = bd.array(spectrum)
+        else: #by default spectrum has a size of 400. If new size, we interpolate
+            self.spectrum = bd.array(np.interp(np.linspace(380,779, spectrum_size), np.linspace(380,779, 400), spectrum))
+
+        self.spectrum_divisions = spectrum_divisions
+        self.dλ_partition = (780 - 380) / self.spectrum_divisions
+        self.λ_list_samples = bd.arange(380, 780, self.dλ_partition)
+        self.spec_partitions = bd.split(self.spectrum, self.spectrum_divisions)
+
+        self.cs = cf.ColourSystem(spectrum_size = spectrum_size, spec_divisions = spectrum_divisions, clip_method = 1)
+
 
         self.lens = False
         self.lens_f = 0.
         self.z = 0
 
+
     def add_rectangular_slit(self, x0, y0, width, height):
         """
         Creates a slit centered at the point (x0, y0) with width width and height height
         """
-        t = np.select(
+        t = bd.select(
             [
                 ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
                 & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
                 True,
             ],
-            [1, 0],
+            [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
         )
         self.E = self.E*t
 
@@ -52,9 +71,10 @@ class PolychromaticField:
         Creates a circular slit centered at the point (x0,y0) with radius R
         """
 
-        t = np.select(
-            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, True], [1, 0]
+        t = bd.select(
+            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, bd.full(self.E.shape, True, dtype=bool)], [bd.ones(self.E.shape), bd.zeros(self.E.shape)]
         )
+
         self.E = self.E*t
 
 
@@ -65,7 +85,7 @@ class PolychromaticField:
         """
 
         r2 = self.xx**2 + self.yy**2 
-        self.E = self.E*np.exp(-r2/(w0**2))
+        self.E = self.E*bd.exp(-r2/(w0**2))
 
 
 
@@ -74,7 +94,7 @@ class PolychromaticField:
         Creates a diffraction_grid with Nx *  Ny slits with separation distance D and width a
         """
 
-        E0 = np.copy(self.E)
+        E0 = bd.copy(self.E)
         t = 0
 
         b = D - a
@@ -86,13 +106,13 @@ class PolychromaticField:
             y0 = height / 2 - a / 2
             for _ in range(Ny):
 
-                t += np.select(
+                t += bd.select(
                     [
                         ((self.xx > (x0 - a / 2)) & (self.xx < (x0 + a / 2)))
                         & ((self.yy > (y0 - a / 2)) & (self.yy < (y0 + a / 2))),
                         True,
                     ],
-                    [1, 0],
+                    [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
                 )
                 y0 -= D
             x0 += D
@@ -106,6 +126,7 @@ class PolychromaticField:
         - If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
         - If pad is specified, we add zeros (black color) padded to the edges of each axis.
         """
+
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
@@ -122,16 +143,18 @@ class PolychromaticField:
             kind="cubic",
         )
         t = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
-        self.E = self.E * t
 
         # optional: add zeros and interpolate to the new specified resolution
         if pad != None:
+
+            if bd != np:
+                self.E = self.E.get()
 
             Nxpad = int(np.round(self.Nx / self.extent_x * pad[0]))
             Nypad = int(np.round(self.Ny / self.extent_y * pad[1]))
             self.E = np.pad(self.E, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
             t = np.pad(t, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
-
+            self.E = np.array(self.E*t)
 
             scale_ratio = self.E.shape[1] / self.E.shape[0]
             self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
@@ -145,12 +168,15 @@ class PolychromaticField:
                 self.E,
                 kind="cubic",
             )
-            self.E = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
+            self.E = bd.array(fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny)))
 
-        # grid units
-        self.x = np.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
-        self.y = np.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
-        self.xx, self.yy = np.meshgrid(self.x, self.y)  
+            # new grid units
+            self.x = bd.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
+            self.y = bd.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
+            self.xx, self.yy = bd.meshgrid(self.x, self.y)  
+
+        else:
+            self.E = self.E*bd.array(t)
 
     def add_lens(self, f):
         """add a thin lens with a focal length equal to f """
@@ -158,74 +184,71 @@ class PolychromaticField:
         self.lens_f = f
 
 
-    def compute_colors_at(self, z, spectrum_divisions=30, grid_divisions=10):
+    def compute_colors_at(self, z):
         """propagate the field to a distance equal to z and compute the RGB colors of the beam profile profile"""
-
+        t0 = time.time()
         self.z = z
 
-        kx = np.linspace(
-            -np.pi * self.Nx // 2 / (self.extent_x / 2),
-            np.pi * self.Nx // 2 / (self.extent_x / 2),
+        kx = bd.linspace(
+            -bd.pi * self.Nx // 2 / (self.extent_x / 2),
+            bd.pi * self.Nx // 2 / (self.extent_x / 2),
             self.Nx,
         )
-        ky = np.linspace(
-            -np.pi * self.Ny // 2 / (self.extent_y / 2),
-            np.pi * self.Ny // 2 / (self.extent_y / 2),
+        ky = bd.linspace(
+            -bd.pi * self.Ny // 2 / (self.extent_y / 2),
+            bd.pi * self.Ny // 2 / (self.extent_y / 2),
             self.Ny,
         )
-        kx, ky = np.meshgrid(kx, ky)
+        kx, ky = bd.meshgrid(kx, ky)
 
-        dλ = (780 - 380) / spectrum_divisions
-        sRGB_linear = np.zeros((3, self.Nx * self.Ny))
-        λ_list_samples = np.arange(380, 780, dλ)
+        sRGB_linear = bd.zeros((3, self.Nx * self.Ny))
+
+        
 
         if self.lens == False:
-            fft_c = fft2(self.E)
-            c = fftshift(fft_c)
+            fft_c = bd.fft.fft2(self.E)
+            c = bd.fft.fftshift(fft_c)
             # if not is computed in the loop
+
 
 
         bar = progressbar.ProgressBar()
 
         # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
         # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
-        for i in bar(range(spectrum_divisions)):
+        
+
+        t0 = time.time()
+
+        for i in bar(range(self.spectrum_divisions)):
             if self.lens == True:
-                fft_c = fft2(self.E * np.exp(-1j*np.pi/(λ_list_samples[i]* nm * self.lens_f) * (self.xx**2 + self.yy**2)))
-                c = fftshift(fft_c)
+                fft_c = bd.fft.fft2(self.E * bd.exp(-1j*bd.pi/(self.λ_list_samples[i]* nm * self.lens_f) * (self.xx**2 + self.yy**2)))
+                c = bd.fft.fftshift(fft_c)
                 # if not is computed in the loop
 
 
-            kz = np.sqrt(
-                (2 * np.pi / (λ_list_samples[i] * nm)) ** 2 - kx ** 2 - ky ** 2
+            kz = bd.sqrt(
+                (2 * bd.pi / (self.λ_list_samples[i] * nm)) ** 2 - kx ** 2 - ky ** 2
             )
 
-            E_λ = ifft2(ifftshift(c * np.exp(1j * kz * z)))
-            Iλ = np.real(E_λ * np.conjugate(E_λ))
-            spec_div = np.where(
-                (cf.λ_list > λ_list_samples[i]) & (cf.λ_list < λ_list_samples[i] + dλ),
-                self.spectrum,
-                0,
-            )
+            E_λ = bd.fft.ifft2(bd.fft.ifftshift(c * bd.exp(1j * kz * z)))
+            Iλ = bd.real(E_λ * bd.conjugate(E_λ))
 
-            # Its likely that you don't have enough RAM to deal with the Nx x Ny x spectrum_divisions array, so we split the array
-            # with grid_divisions
-            if grid_divisions == 1:
-                XYZ = cf.spec_to_XYZ(np.outer(Iλ, spec_div))
-            else:
-                Iλ_split = np.split(Iλ, grid_divisions)
-                XYZ_list = [cf.spec_to_XYZ(np.outer(Iλ_, spec_div)) for Iλ_ in Iλ_split]
-                XYZ = np.concatenate(XYZ_list, axis=1)
-            sRGB_linear += cf.XYZ_to_sRGB_linear(XYZ)
-        sRGB_linear += cf.XYZ_to_sRGB_linear(XYZ)
+            XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
+            sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
 
-        rgb = cf.sRGB_linear_to_sRGB(sRGB_linear)
+        if bd != np:
+        	bd.cuda.Stream.null.synchronize()
+        rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
         rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
+        print ("Computation Took", time.time() - t0)
         return rgb
 
     def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
         """visualize the diffraction pattern with matplotlib"""
         plt.style.use("dark_background")
+        if bd != np:
+        	rgb = rgb.get()
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(1, 1, 1)
