@@ -1,6 +1,6 @@
 # Diffraction Simulator - Angular Spectrum Method
 
-Implementation of the angular spectrum method in Python to simulate diffraction patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light also with arbitrary spectrums.
+Implementation of the angular spectrum method in Python to simulate diffraction patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light with arbitrary spectrums.
 
 How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 
@@ -23,8 +23,8 @@ pip install .
 
 ## Examples
 
-To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt:
-
+To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt. 
+To compute your own diffraction pattern, first, also take a look at these examples. You'll need to specify in the script the aperture as an image and input its size.
 
 ```
 python hexagon_monochromatic.py
@@ -64,11 +64,12 @@ python text.py
 
 For simulating diffraction patterns with lenses, take a look at [these examples](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
 
-GPU acceleration requires having [CuPy](https://docs.cupy.dev/en/stable/install.html) installed and [CUDA](https://developer.nvidia.com/cuda-downloads) in your computer.
+GPU acceleration requires having [CuPy](https://docs.cupy.dev/en/stable/install.html) installed and [CUDA](https://developer.nvidia.com/cuda-downloads) in your computer. 
 To use GPU acceleration in your simulations, after import `diffractsim` add the line:
 
 ```python
 diffractsim.set_backend("CUDA")
 ```
+Cupy and CUDA aren't required to install and use this package, but they can offer a significant speed boost.
 
-The first GPU accelerated run can be slow because Python is caching the required functions. The next times it should be between 10x and 100x times faster than a CPU backend.
+The first GPU accelerated run can be slow because Python is caching the required functions. The next times it should be about 10x faster than a CPU backend. The speed boost raises when the grid gets larger.
