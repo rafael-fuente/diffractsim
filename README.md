@@ -1,11 +1,15 @@
 # Diffraction Simulator - Angular Spectrum Method
 
-Implementation of the angular spectrum method in Python to simulate diffraction patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light with arbitrary spectrums.
+[![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE)
+
+Accurate and easy to use light diffraction simulator, implemented with the angular spectrum method in Python.
+You can use it for simulating the diffraction pattern of an arbitrary aperture, both with monochromatic and polychromatic light.
 
 How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 
-[![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE)
+## Features
 
+- [x] Arbitrary apertures
 - [x] Arbitrary light spectrums
 - [x] Lenses
 - [x] GPU acceleration
@@ -24,7 +28,7 @@ pip install .
 ## Examples
 
 To perform the simulations, just run from the [examples subdirectory](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/tree/main/examples) the corresponding Python scripts on the command prompt. 
-To compute your own diffraction pattern, first, also take a look at these examples. You'll need to specify in the script the aperture as an image and input its size.
+To compute your own diffraction pattern, you'll need to specify in the script the aperture as an image and input its size.
 
 ```
 python hexagon_monochromatic.py
