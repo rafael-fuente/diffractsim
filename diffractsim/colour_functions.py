@@ -33,7 +33,7 @@ class ColourSystem:
             self.cie_y = np.interp(self.λ_list, λ_list_old, cmf.T[1])
             self.cie_z = np.interp(self.λ_list, λ_list_old, cmf.T[2])
 
-        # if cupy backened:
+        # if cupy backend:
         if bd != np:
             self.cie_x = bd.array(self.cie_x)
             self.cie_y = bd.array(self.cie_y)

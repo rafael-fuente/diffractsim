@@ -34,6 +34,9 @@ class PolychromaticField:
         self.Ny = bd.int(Ny)
         self.E = bd.ones((int(self.Ny), int(self.Nx)))
 
+        if not(spectrum_size/spectrum_divisions).is_integer():
+            raise ValueError("spectrum_size/spectrum_divisions must be an integer")
+
         if spectrum_size == 400: 
             self.spectrum = bd.array(spectrum)
         else: #by default spectrum has a size of 400. If new size, we interpolate
