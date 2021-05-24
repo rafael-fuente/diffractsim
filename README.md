@@ -34,39 +34,51 @@ To compute your own diffraction pattern, you'll need to specify in the script th
 python hexagon_monochromatic.py
 ```
 
-[![N|Solid](/images/hexagon_monochromatic.png)](/images/hexagon_monochromatic.png)
+[![N|Solid](/images/hexagon_monochromatic.png)](/examples/hexagon_monochromatic.png)
 
 ```
 python hexagon_polychromatic.py
 ```
 
-[![N|Solid](/images/hexagon_polychromatic.png)](/images/hexagon_polychromatic.png)
+[![N|Solid](/images/hexagon_polychromatic.png)](/examples/hexagon_polychromatic.py)
 
 ```
 python rectangular_grating_small.py
 ```
 
-[![N|Solid](/images/rectangular_grating_small.png)](/images/rectangular_grating_small.png)
+[![N|Solid](/images/rectangular_grating_small.png)](/examples/rectangular_grating_small.py)
 
 ```
-python rectangular_grating.py
+python rectangular_grating_big.py
 ```
 
-[![N|Solid](/images/rectangular_grating.png)](/images/rectangular_grating.png)
+[![N|Solid](/images/rectangular_grating.png)](/examples/rectangular_grating_big.py)
+
+```
+python bahtinov_mask.py
+```
+
+[![N|Solid](/images/bahtinov_mask.png)](/examples/bahtinov_mask.py)
 
 ```
 python rings.py
 ```
 
-[![N|Solid](/images/rings.png)](/images/rings.png)
+[![N|Solid](/images/rings.png)](/examples/rings.py)
+
+```
+python hexagonal_grating.py
+```
+
+[![N|Solid](/images/hexagonal_grating.png)](/examples/hexagonal_grating.py)
 
 ```
 python text.py
 ```
 
-[![N|Solid](/images/text.png)](/images/text.png)
+[![N|Solid](/images/text.png)](/examples/text.py)
 
-For simulating diffraction patterns with lenses, take a look at [these examples](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
+For a more detailed discussion about simulating diffraction patterns using lenses, take a look at [these examples](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
 
 GPU acceleration requires having [CuPy](https://docs.cupy.dev/en/stable/install.html) installed and [CUDA](https://developer.nvidia.com/cuda-downloads) in your computer. 
 To use GPU acceleration in your simulations, after import `diffractsim` add the line:
@@ -76,4 +88,4 @@ diffractsim.set_backend("CUDA")
 ```
 Cupy and CUDA aren't required to install and use this package, but they can offer a significant speed boost.
 
-The first GPU accelerated run can be slow because Python is caching the required functions. The next times it should be about 10x faster than a CPU backend. The speed boost raises when the grid gets larger.
+The first GPU accelerated run can be slow because Python is caching the required functions. The next time it can be about 10x and 100x faster than a CPU backend depending on your GPU. The speed boost raises as the grid gets larger.

@@ -12,7 +12,7 @@ F = PolychromaticField(
 )
 
 F.add_aperture_from_image(
-    "./apertures/rectangular_grating.jpg", pad=(10 * mm, 10 * mm), Nx=1400, Ny=1400
+    "./apertures/rectangular_grating_big.jpg", pad=(10 * mm, 10 * mm), Nx=1400, Ny=1400
 )
 rgb = F.compute_colors_at(30*cm)
 F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])
