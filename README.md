@@ -52,7 +52,7 @@ python rectangular_grating_small.py
 python rectangular_grating_big.py
 ```
 
-[![N|Solid](/images/rectangular_grating.png)](/examples/rectangular_grating_big.py)
+[![N|Solid](/images/rectangular_grating_big.png)](/examples/rectangular_grating_big.py)
 
 ```
 python bahtinov_mask.py
