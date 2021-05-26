@@ -34,7 +34,7 @@ To compute your own diffraction pattern, you'll need to specify in the script th
 python hexagon_monochromatic.py
 ```
 
-[![N|Solid](/images/hexagon_monochromatic.png)](/examples/hexagon_monochromatic.png)
+[![N|Solid](/images/hexagon_monochromatic.png)](/examples/hexagon_monochromatic.py)
 
 ```
 python hexagon_polychromatic.py
