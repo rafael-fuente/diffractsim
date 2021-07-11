@@ -2,6 +2,7 @@
 
 Implementation of the angular spectrum method in Python to simulate diffraction patterns with arbitrary apertures.
 These examples correspond to the simulations with lenses, whose explanation can be found in [this video](https://www.youtube.com/watch?v=G4J4PV6tqH0).
+A further discussion and its mathematical background can be found in this [article](https://rafael-fuente.github.io/simulating-light-diffraction-with-lenses-visualizing-fourier-optics.html).
 
 ## Installation
 
