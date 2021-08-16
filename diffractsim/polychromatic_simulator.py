@@ -133,11 +133,11 @@ class PolychromaticField:
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
-        imgRGB = np.asarray(img) / 256.0
+        imgRGB = np.asarray(img) / 255.0
         imgR = imgRGB[:, :, 0]
         imgG = imgRGB[:, :, 1]
         imgB = imgRGB[:, :, 2]
-        t = 0.2989 * imgR + 0.5870 * imgG + 0.1140 * imgB
+        t = 0.2990 * imgR + 0.5870 * imgG + 0.1140 * imgB
 
         fun = interp2d(
             np.linspace(0, 1, t.shape[1]),
