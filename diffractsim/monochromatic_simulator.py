@@ -134,6 +134,7 @@ class MonochromaticField:
         imgG = imgRGB[:, :, 1]
         imgB = imgRGB[:, :, 2]
         t = 0.2990 * imgR + 0.5870 * imgG + 0.1140 * imgB
+        t = np.flip(t, axis = 0)
 
         fun = interp2d(
             np.linspace(0, 1, t.shape[1]),
@@ -263,7 +264,7 @@ class MonochromaticField:
                 -self.extent_y / 2 / mm,
                 self.extent_y / 2 / mm,
             ],
-            interpolation="spline36",
+            interpolation="spline36", origin = "lower"
         )
         plt.show()
 
