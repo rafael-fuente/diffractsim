@@ -13,10 +13,12 @@ cm = 1e-2
 mm = 1e-3
 um = 1e-6
 nm = 1e-9
+W = 1
+
 
 
 class MonochromaticField:
-    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1):
+    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1 * W / (m**2)):
         """
         Initializes the field, representing the cross-section profile of a plane wave
 
@@ -183,9 +185,15 @@ class MonochromaticField:
         self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
-    def add_lens(self, f):
+    def add_lens(self, f, radius = None, aberration = None):
         """add a thin lens with a focal length equal to f """
         self.E = self.E * bd.exp(-1j*bd.pi/(self.λ*f) * (self.xx**2 + self.yy**2))
+
+        if aberration != None:
+            self.E = self.E*bd.exp(2*bd.pi * 1j *aberration(self.xx, self.yy))
+
+        if radius != None:
+            self.E = bd.where((self.xx**2 + self.yy**2) < radius**2, self.E, 0)
 
 
 
@@ -233,6 +241,63 @@ class MonochromaticField:
         self.propagate(z)
         rgb = self.get_colors()
         return rgb
+
+    def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=None):
+        """visualize the diffraction pattern with matplotlib"""
+
+        plt.style.use("dark_background")
+
+
+        if square_root == False:
+            if bd != np:
+                I = self.I.get()
+            else:
+                I = self.I
+
+        else:
+            if bd != np:
+                I = np.sqrt(self.I.get())
+            else:
+                I = np.sqrt(self.I)
+
+
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(1, 1, 1)
+
+        if xlim != None:
+            ax.set_xlim(xlim)
+
+        if ylim != None:
+            ax.set_ylim(ylim)
+
+        # we use mm by default
+        ax.set_xlabel("[mm]")
+        ax.set_ylabel("[mm]")
+
+        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
+
+        im = ax.imshow(
+            I, cmap= 'inferno',
+            extent=[
+                -self.extent_x / 2 / mm,
+                self.extent_x / 2 / mm,
+                -self.extent_y / 2 / mm,
+                self.extent_y / 2 / mm,
+            ],
+            interpolation="spline36", origin = "lower"
+        )
+
+        cb = fig.colorbar(im, orientation = 'vertical')
+
+        if square_root == False:
+            cb.set_label(r'Intensity $\left[W / m^2 \right]$', fontsize=13, labelpad =  14 )
+        else:
+            cb.set_label(r'Square Root Intensity $\left[ \sqrt{W / m^2 } \right]$', fontsize=13, labelpad =  14 )
+
+
+        plt.show()
+
+
 
     def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
         """visualize the diffraction pattern with matplotlib"""

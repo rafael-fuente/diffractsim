@@ -10,7 +10,7 @@ How the method and the simulator work is described in this [Article](https://raf
 
 setup(
     name='diffractsim',
-    version='1.3.0',
+    version='1.4.0',
     description='Implementation of the angular spectrum method in Python to simulate diffraction patterns',
     long_description=long_description,
     long_description_content_type="text/markdown",
