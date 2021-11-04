@@ -37,8 +37,8 @@ class MonochromaticField:
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.x = bd.linspace(-extent_x / 2, extent_x / 2, Nx)
-        self.y = bd.linspace(-extent_y / 2, extent_y / 2, Ny)
+        self.x = self.extent_x*(bd.arange(Nx)-Nx//2)/Nx
+        self.y = self.extent_y*(bd.arange(Ny)-Ny//2)/Ny
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
         self.Nx = bd.int(Nx)
@@ -206,18 +206,16 @@ class MonochromaticField:
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
 
-        kx = bd.linspace(
-            -bd.pi * self.Nx // 2 / (self.extent_x / 2),
-            bd.pi * self.Nx // 2 / (self.extent_x / 2),
-            self.Nx,
-        )
-        ky = bd.linspace(
-            -bd.pi * self.Ny // 2 / (self.extent_y / 2),
-            bd.pi * self.Ny // 2 / (self.extent_y / 2),
-            self.Ny,
-        )
+        kx = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
+        ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
         kx, ky = bd.meshgrid(kx, ky)
-        kz = bd.sqrt((2 * bd.pi / self.λ) ** 2 - kx ** 2 - ky ** 2)
+
+        kz = bd.zeros(kx.shape,dtype='complex')
+        argument = (2 * bd.pi / self.λ) ** 2 - kx ** 2 - ky ** 2
+        #Calculate first propagating and then evanescent (complex) modes
+        idx_arg = (argument >= 0)
+        kz[idx_arg] =    bd.sqrt(argument[idx_arg])
+        kz[bd.invert(idx_arg)] = 1j*bd.sqrt(-argument[bd.invert(idx_arg)])
 
         # propagate the angular spectrum a distance z
         E = bd.fft.ifft2(bd.fft.ifftshift(c * bd.exp(1j * kz * z)))
