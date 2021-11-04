@@ -173,8 +173,8 @@ class MonochromaticField:
             self.E = bd.array(fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny)))
 
             # new grid units
-            self.x = bd.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
-            self.y = bd.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
+            self.x = self.extent_x*(bd.arange(self.Nx)-self.Nx//2)/self.Nx
+            self.y = self.extent_y*(bd.arange(self.Ny)-self.Ny//2)/self.Ny
             self.xx, self.yy = bd.meshgrid(self.x, self.y)  
 
         else:
@@ -210,12 +210,11 @@ class MonochromaticField:
         ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
         kx, ky = bd.meshgrid(kx, ky)
 
-        kz = bd.zeros(kx.shape,dtype='complex')
         argument = (2 * bd.pi / self.λ) ** 2 - kx ** 2 - ky ** 2
-        #Calculate first propagating and then evanescent (complex) modes
-        idx_arg = (argument >= 0)
-        kz[idx_arg] =    bd.sqrt(argument[idx_arg])
-        kz[bd.invert(idx_arg)] = 1j*bd.sqrt(-argument[bd.invert(idx_arg)])
+
+        #Calculate the propagating and the evanescent (complex) modes
+        tmp = bd.sqrt(bd.abs(argument))
+        kz = bd.where(argument >= 0, tmp, 1j*tmp)
 
         # propagate the angular spectrum a distance z
         E = bd.fft.ifft2(bd.fft.ifftshift(c * bd.exp(1j * kz * z)))

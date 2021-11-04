@@ -26,8 +26,8 @@ class PolychromaticField:
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.x = bd.linspace(-extent_x / 2, extent_x / 2, Nx)
-        self.y = bd.linspace(-extent_y / 2, extent_y / 2, Ny)
+        self.x = self.extent_x*(bd.arange(Nx)-Nx//2)/Nx
+        self.y = self.extent_y*(bd.arange(Ny)-Ny//2)/Ny
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
         self.Nx = bd.int(Nx)
@@ -175,8 +175,8 @@ class PolychromaticField:
             self.E = bd.array(fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny)))
 
             # new grid units
-            self.x = bd.linspace(-self.extent_x / 2, self.extent_x / 2, self.Nx)
-            self.y = bd.linspace(-self.extent_y / 2, self.extent_y / 2, self.Ny)
+            self.x = self.extent_x*(bd.arange(self.Nx)-self.Nx//2)/self.Nx
+            self.y = self.extent_y*(bd.arange(self.Ny)-self.Ny//2)/self.Ny
             self.xx, self.yy = bd.meshgrid(self.x, self.y)  
 
         else:
@@ -193,16 +193,9 @@ class PolychromaticField:
         t0 = time.time()
         self.z = z
 
-        kx = bd.linspace(
-            -bd.pi * self.Nx // 2 / (self.extent_x / 2),
-            bd.pi * self.Nx // 2 / (self.extent_x / 2),
-            self.Nx,
-        )
-        ky = bd.linspace(
-            -bd.pi * self.Ny // 2 / (self.extent_y / 2),
-            bd.pi * self.Ny // 2 / (self.extent_y / 2),
-            self.Ny,
-        )
+
+        kx = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
+        ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
         kx, ky = bd.meshgrid(kx, ky)
 
         sRGB_linear = bd.zeros((3, self.Nx * self.Ny))
@@ -231,9 +224,11 @@ class PolychromaticField:
                 # if not is computed in the loop
 
 
-            kz = bd.sqrt(
-                (2 * bd.pi / (self.λ_list_samples[i] * nm)) ** 2 - kx ** 2 - ky ** 2
-            )
+            argument = (2 * bd.pi / (self.λ_list_samples[i]* nm)) ** 2 - kx ** 2 - ky ** 2
+
+            #Calculate the propagating and the evanescent (complex) modes
+            tmp = bd.sqrt(bd.abs(argument))
+            kz = bd.where(argument >= 0, tmp, 1j*tmp)
 
             E_λ = bd.fft.ifft2(bd.fft.ifftshift(c * bd.exp(1j * kz * z)))
             Iλ = bd.real(E_λ * bd.conjugate(E_λ))
