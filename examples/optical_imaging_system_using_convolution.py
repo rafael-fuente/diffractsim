@@ -57,11 +57,11 @@ def propagate_to_image_plane(F, radius, zi, z0):
 from diffractsim import MonochromaticField, nm, mm, cm
 
 F = MonochromaticField(
-    wavelength=488 * nm, extent_x=1. * mm, extent_y=1. * mm, Nx=2000, Ny=2000,intensity = 0.2
+    wavelength=488 * nm, extent_x=1.5 * mm, extent_y=1.5 * mm, Nx=2048, Ny=2048,intensity = 0.2
 )
 
 F.add_aperture_from_image(
-    "./apertures/QWT.png",  pad=(0.5 * mm, 0.5 * mm), Nx=2300, Ny=2300
+    "./apertures/QWT.png",  image_size = (1.0 * mm, 1.0 * mm)
 )
 
 propagate_to_image_plane(F,radius = 6*mm, zi = 50*cm, z0 = 50*cm)

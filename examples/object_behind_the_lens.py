@@ -13,7 +13,7 @@ F.add_lens(f = 60*cm)
 F.propagate(30*cm)
 
 F.add_aperture_from_image(
-    "./apertures/QWT_small.png",   Nx=2000, Ny=2000
+    "./apertures/QWT.png", image_size = (10. * mm, 10. * mm)
 )
 F.propagate(30*cm)
 

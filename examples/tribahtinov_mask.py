@@ -5,13 +5,13 @@ from diffractsim import PolychromaticField, cf, nm, mm, cm
 
 F = PolychromaticField(
     spectrum = 6*cf.illuminant_d65, 
-    extent_x=5. * mm, extent_y=5. * mm, 
-    Nx=700, Ny=700,spectrum_size = 300, spectrum_divisions = 100
+    extent_x=24. * mm, extent_y=24. * mm, 
+    Nx=2048, Ny=2048,spectrum_size = 240, spectrum_divisions = 80
 )
 
 
 F.add_aperture_from_image(
-    "./apertures/tribahtinov_mask.jpg", pad=(18 * mm, 18 * mm), Nx=2500, Ny=2500
+    "./apertures/tribahtinov_mask.jpg", image_size=(5 * mm, 5 * mm)
 )
 
 

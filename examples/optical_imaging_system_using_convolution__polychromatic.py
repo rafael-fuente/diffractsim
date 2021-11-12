@@ -90,13 +90,13 @@ def propagate_to_image_plane(F, radius, zi, z0):
 from diffractsim import MonochromaticField, nm, mm, cm
 
 
-f = 6
+f = 1
 
 
 
 
 F = PolychromaticField(
-    spectrum=2 * cf.illuminant_d65, extent_x=f * 1.0 * mm, extent_y=f * 1.0 * mm, Nx=2000, Ny=2000,
+    spectrum=2 * cf.illuminant_d65, extent_x=f * 1.5 * mm, extent_y=f * 1.5 * mm, Nx=2048, Ny=2048,
     spectrum_size = 180, spectrum_divisions = 30
 )
 
@@ -105,7 +105,7 @@ F = PolychromaticField(
 
 
 F.add_aperture_from_image(
-    "./apertures/horse.png",  pad=(f * 0.5 * mm, f * 0.5 * mm), Nx=2300, Ny=2300
+    "./apertures/horse.png",  image_size=(f *1.0 * mm, f *1.0 * mm)
 )
 
 rgb = propagate_to_image_plane(F,radius = 5*mm, zi = 50*cm, z0 = 50*cm)

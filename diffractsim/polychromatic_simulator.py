@@ -63,9 +63,9 @@ class PolychromaticField:
             [
                 ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
                 & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
-                True,
+                bd.ones_like(self.E, dtype=bool),
             ],
-            [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
+            [bd.ones_like(self.E), bd.zeros_like(self.E)],
         )
         self.E = self.E*t
 
@@ -75,7 +75,7 @@ class PolychromaticField:
         """
 
         t = bd.select(
-            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, bd.full(self.E.shape, True, dtype=bool)], [bd.ones(self.E.shape), bd.zeros(self.E.shape)]
+            [(self.xx - x0) ** 2 + (self.yy - y0) ** 2 < R ** 2, bd.ones_like(self.E, dtype=bool)], [bd.ones_like(self.E), bd.zeros_like(self.E)]
         )
 
         self.E = self.E*t
@@ -113,79 +113,69 @@ class PolychromaticField:
                     [
                         ((self.xx > (x0 - a / 2)) & (self.xx < (x0 + a / 2)))
                         & ((self.yy > (y0 - a / 2)) & (self.yy < (y0 + a / 2))),
-                        True,
+                        bd.ones_like(self.E, dtype=bool),
                     ],
-                    [bd.ones(self.E.shape), bd.zeros(self.E.shape)],
-                )
+                    [bd.ones_like(self.E), bd.zeros_like(self.E)])
                 y0 -= D
             x0 += D
         self.E = self.E*t
 
 
 
-    def add_aperture_from_image(self, path, pad=None, Nx=None, Ny=None):
+    def add_aperture_from_image(self, path, image_size = None):
         """
-        Load the image specified at "path" as a numpy graymap array.
-        - If Nx and Ny is specified, we interpolate the pattern with interp2d method to the new specified resolution.
-        - If pad is specified, we add zeros (black color) padded to the edges of each axis.
+        Load the image specified at "path" as a numpy graymap array. The imagen is centered on the plane and
+        its physical size is specified in image_size parameter as image_size = (float, float)
+
+        - If image_size isn't specified, the image fills the entire aperture plane
         """
 
 
         img = Image.open(Path(path))
         img = img.convert("RGB")
-        imgRGB = np.asarray(img) / 255.0
+
+        img_pixels_width, img_pixels_height = img.size
+
+        if image_size != None:
+            new_img_pixels_width, new_img_pixels_height = int(np.round(image_size[0] / self.extent_x  * self.Nx)),  int(np.round(image_size[1] / self.extent_y  * self.Ny))
+        else:
+            #by default, the image fills the entire aperture plane
+            new_img_pixels_width, new_img_pixels_height = self.Nx, self.Ny
+
+        img = img.resize((new_img_pixels_width, new_img_pixels_height))
+
+        dst_img = Image.new("RGB", (self.Nx, self.Ny), "black" )
+        dst_img_pixels_width, dst_img_pixels_height = dst_img.size
+
+        Ox, Oy = (dst_img_pixels_width-new_img_pixels_width)//2, (dst_img_pixels_height-new_img_pixels_height)//2
+        
+        dst_img.paste( img , box = (Ox, Oy ))
+
+        imgRGB = np.asarray(dst_img) / 255.0
         imgR = imgRGB[:, :, 0]
         imgG = imgRGB[:, :, 1]
         imgB = imgRGB[:, :, 2]
         t = 0.2990 * imgR + 0.5870 * imgG + 0.1140 * imgB
         t = np.flip(t, axis = 0)
 
-        fun = interp2d(
-            np.linspace(0, 1, t.shape[1]),
-            np.linspace(0, 1, t.shape[0]),
-            t,
-            kind="cubic",
-        )
-        t = fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny))
+        self.E = self.E*bd.array(t)
 
-        # optional: add zeros and interpolate to the new specified resolution
-        if pad != None:
-
-            if bd != np:
-                self.E = self.E.get()
-
-            Nxpad = int(np.round(self.Nx / self.extent_x * pad[0]))
-            Nypad = int(np.round(self.Ny / self.extent_y * pad[1]))
-            self.E = np.pad(self.E, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
-            t = np.pad(t, ((Nypad, Nypad), (Nxpad, Nxpad)), "constant")
-            self.E = np.array(self.E*t)
-
-            scale_ratio = self.E.shape[1] / self.E.shape[0]
-            self.Nx = int(np.round(self.E.shape[0] * scale_ratio)) if Nx is None else Nx
-            self.Ny = self.E.shape[0] if Ny is None else Ny
-            self.extent_x += 2 * pad[0]
-            self.extent_y += 2 * pad[1]
-
-            fun = interp2d(
-                np.linspace(0, 1, self.E.shape[1]),
-                np.linspace(0, 1, self.E.shape[0]),
-                self.E,
-                kind="cubic",
-            )
-            self.E = bd.array(fun(np.linspace(0, 1, self.Nx), np.linspace(0, 1, self.Ny)))
-
-            # new grid units
-            self.x = self.extent_x*(bd.arange(self.Nx)-self.Nx//2)/self.Nx
-            self.y = self.extent_y*(bd.arange(self.Ny)-self.Ny//2)/self.Ny
-            self.xx, self.yy = bd.meshgrid(self.x, self.y)  
-
-        else:
-            self.E = self.E*bd.array(t)
-
-    def add_lens(self, f):
+    def add_lens(self, f,radius = None, aberration = None):
         """add a thin lens with a focal length equal to f """
+
         self.lens = True
         self.lens_f = f
+
+        self.lens_t = 1
+        if aberration != None:
+            self.lens_t = self.lens_t*bd.exp(2*bd.pi * 1j *aberration(self.xx, self.yy))
+
+        if radius != None:
+            self.lens_t = bd.where((self.xx**2 + self.yy**2) < radius**2, self.lens_t, 0)
+
+
+
+
 
 
     def compute_colors_at(self, z):
@@ -219,7 +209,7 @@ class PolychromaticField:
 
         for i in bar(range(self.spectrum_divisions)):
             if self.lens == True:
-                fft_c = bd.fft.fft2(self.E * bd.exp(-1j*bd.pi/(self.λ_list_samples[i]* nm * self.lens_f) * (self.xx**2 + self.yy**2)))
+                fft_c = bd.fft.fft2(self.E * bd.exp(-1j*bd.pi/(self.λ_list_samples[i]* nm * self.lens_f) * (self.xx**2 + self.yy**2))  * self.lens_t )
                 c = bd.fft.fftshift(fft_c)
                 # if not is computed in the loop
 
@@ -237,7 +227,7 @@ class PolychromaticField:
             sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
 
         if bd != np:
-        	bd.cuda.Stream.null.synchronize()
+            bd.cuda.Stream.null.synchronize()
         rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
         rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
         print ("Computation Took", time.time() - t0)

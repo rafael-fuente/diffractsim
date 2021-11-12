@@ -5,14 +5,14 @@ from diffractsim import PolychromaticField, cf, mm, cm
 
 F = PolychromaticField(
     spectrum=1 * cf.illuminant_d65,
-    extent_x=10.0 * mm,
-    extent_y=10.0 * mm,
-    Nx=300,
-    Ny=300,
+    extent_x=16.0 * mm,
+    extent_y=16.0 * mm,
+    Nx=1500,
+    Ny=1500,
 )
 
 F.add_aperture_from_image(
-    "./apertures/rectangular_grating_big.jpg", pad=(10 * mm, 10 * mm), Nx=1400, Ny=1400
+    "./apertures/rectangular_grating.jpg", image_size=(10 * mm, 10 * mm)
 )
 rgb = F.compute_colors_at(30*cm)
 F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])

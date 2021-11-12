@@ -73,7 +73,7 @@ python hexagonal_grating.py
 [![N|Solid](/images/hexagonal_grating.png)](/examples/hexagonal_grating.py)
 
 ```
-python text.py
+python diffraction_text.py
 ```
 
 [![N|Solid](/images/text.png)](/examples/text.py)

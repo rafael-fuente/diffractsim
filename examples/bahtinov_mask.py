@@ -11,7 +11,7 @@ F = PolychromaticField(
 
 
 F.add_aperture_from_image(
-    "./apertures/bahtinov_mask.jpg", pad=(10 * mm, 10 * mm), Nx=1520, Ny=1520
+    "./apertures/bahtinov_mask.jpg", image_size = (5. * mm, 5 * mm)
 )
 
 
