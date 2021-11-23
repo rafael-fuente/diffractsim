@@ -16,4 +16,4 @@ F.propagate(100*cm)
 
 
 rgb = F.get_colors()
-F.plot(rgb, xlim=[-8,8], ylim=[-8,8])
+F.plot_colors(rgb, xlim=[-8*mm,8*mm], ylim=[-8*mm,8*mm])

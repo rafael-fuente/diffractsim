@@ -15,4 +15,4 @@ F.add_aperture_from_image(
     "./apertures/diffraction_text.jpg", image_size=(15 * mm, 15 * mm)
 )
 rgb = F.compute_colors_at(z=150*cm)
-F.plot(rgb, xlim=[-10, 10], ylim=[-10, 10])
+F.plot_colors(rgb, xlim=[-10*mm, 10*mm], ylim=[-10*mm, 10*mm])

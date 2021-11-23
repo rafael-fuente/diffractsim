@@ -17,34 +17,26 @@ def propagate_to_image_plane(F, radius, zi, z0):
     #magnification factor
     M = zi/z0
     fun = interp2d(
-                np.linspace(-F.extent_x / 2, F.extent_x / 2, F.E.shape[1]),
-                np.linspace(-F.extent_y / 2, F.extent_y / 2, F.E.shape[0]),
+                F.extent_x*(np.arange(F.Nx)-F.Nx//2)/F.Nx,
+                F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny,
                 F.E,
                 kind="cubic",)
     
-    F.E = fun(np.linspace(
-              -F.extent_x / 2 , F.extent_x / 2 , F.E.shape[1])/M, 
-              np.linspace(-F.extent_y / 2 , F.extent_y / 2 ,F.E.shape[0])/M )/M
+    F.E = fun(F.extent_x*(np.arange(F.Nx)-F.Nx//2)/F.Nx/M, 
+               F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny/M )/M
+
     F.E = np.flip(F.E)
 
     fft_c = fft2(F.E)
     c = fftshift(fft_c)
 
-    fx = np.linspace(
-        -1/2 * F.Nx // 2 / (F.extent_x / 2),
-        1/2 * F.Nx // 2 / (F.extent_x / 2),
-        F.Nx,
-    )
-    fy = np.linspace(
-        -1/2 * F.Ny // 2 / (F.extent_y / 2),
-        1/2 * F.Ny // 2 / (F.extent_y / 2),
-        F.Ny,
-    )
+    fx = np.fft.fftshift(np.fft.fftfreq(F.Nx, d = F.x[1]-F.x[0]))
+    fy = np.fft.fftshift(np.fft.fftfreq(F.Ny, d = F.y[1]-F.y[0]))
     fx, fy = np.meshgrid(fx, fy)
     fp = np.sqrt(fx**2 + fy**2)
 
     
-    #Definte the OTF function, representing the Fourier transform of the circular pupil function.
+    #Definte the ATF function, representing the Fourier transform of the circular pupil function.
     H = np.select(
         [fp * zi* F.λ < radius , True], [1, 0]
     )
@@ -68,4 +60,4 @@ propagate_to_image_plane(F,radius = 6*mm, zi = 50*cm, z0 = 50*cm)
 
 
 rgb = F.get_colors()
-F.plot(rgb, figsize=(5, 5), xlim=[-0.4,0.4], ylim=[-0.4,0.4])
+F.plot_colors(rgb, figsize=(5, 5), xlim=[-0.4*mm,0.4*mm], ylim=[-0.4*mm,0.4*mm])

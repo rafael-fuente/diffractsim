@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
+import time
+import progressbar
 
 import numpy as np
 from .backend_functions import backend as bd
@@ -118,18 +120,28 @@ class MonochromaticField:
         self.E = self.E*t
         self.I = bd.real(self.E * bd.conjugate(self.E))  
 
-
-
-    def add_aperture_from_image(self, path, image_size = None):
+    def add_aperture_from_function(self,function):
         """
-        Load the image specified at "path" as a numpy graymap array. The imagen is centered on the plane and
-        its physical size is specified in image_size parameter as image_size = (float, float)
+        Evaluate a function with arguments 'x : 2D  array' and 'y : 2D array' as the amplitude transmittance of the aperture. 
+        """
+
+
+        t = function(self.xx, self.yy)
+        self.E = self.E*bd.array(t)
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
+        return t
+
+
+    def add_aperture_from_image(self, amplitude_mask_path, image_size = None):
+        """
+        Load the image specified at "amplitude_mask_path" as a numpy graymap array represeting the amplitude transmittance of the aperture. 
+        The image is centered on the plane and its physical size is specified in image_size parameter as image_size = (float, float)
 
         - If image_size isn't specified, the image fills the entire aperture plane
         """
 
 
-        img = Image.open(Path(path))
+        img = Image.open(Path(amplitude_mask_path))
         img = img.convert("RGB")
 
         img_pixels_width, img_pixels_height = img.size
@@ -172,7 +184,7 @@ class MonochromaticField:
             self.E = self.E*bd.exp(2*bd.pi * 1j *aberration(self.xx, self.yy))
 
         if radius != None:
-            self.E = bd.where((self.xx**2 + self.yy**2) < radius**2, self.E, 0)
+            self.E = bd.where((self.xx**2 + self.yy**2) < radius**2, self.E, bd.zeros_like(self.E))
 
 
 
@@ -218,96 +230,6 @@ class MonochromaticField:
         rgb = self.get_colors()
         return rgb
 
-    def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=None):
-        """visualize the diffraction pattern with matplotlib"""
-
-        plt.style.use("dark_background")
-
-
-        if square_root == False:
-            if bd != np:
-                I = self.I.get()
-            else:
-                I = self.I
-
-        else:
-            if bd != np:
-                I = np.sqrt(self.I.get())
-            else:
-                I = np.sqrt(self.I)
-
-
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1, 1, 1)
-
-        if xlim != None:
-            ax.set_xlim(xlim)
-
-        if ylim != None:
-            ax.set_ylim(ylim)
-
-        # we use mm by default
-        ax.set_xlabel("[mm]")
-        ax.set_ylabel("[mm]")
-
-        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
-
-        im = ax.imshow(
-            I, cmap= 'inferno',
-            extent=[
-                -self.extent_x / 2 / mm,
-                self.extent_x / 2 / mm,
-                -self.extent_y / 2 / mm,
-                self.extent_y / 2 / mm,
-            ],
-            interpolation="spline36", origin = "lower"
-        )
-
-        cb = fig.colorbar(im, orientation = 'vertical')
-
-        if square_root == False:
-            cb.set_label(r'Intensity $\left[W / m^2 \right]$', fontsize=13, labelpad =  14 )
-        else:
-            cb.set_label(r'Square Root Intensity $\left[ \sqrt{W / m^2 } \right]$', fontsize=13, labelpad =  14 )
-
-
-        plt.show()
-
-
-
-    def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
-        """visualize the diffraction pattern with matplotlib"""
-
-        plt.style.use("dark_background")
-        if bd != np:
-            rgb = rgb.get()
-
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1, 1, 1)
-
-        if xlim != None:
-            ax.set_xlim(xlim)
-
-        if ylim != None:
-            ax.set_ylim(ylim)
-
-        # we use mm by default
-        ax.set_xlabel("[mm]")
-        ax.set_ylabel("[mm]")
-
-        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
-
-        im = ax.imshow(
-            (rgb),
-            extent=[
-                -self.extent_x / 2 / mm,
-                self.extent_x / 2 / mm,
-                -self.extent_y / 2 / mm,
-                self.extent_y / 2 / mm,
-            ],
-            interpolation="spline36", origin = "lower"
-        )
-        plt.show()
 
 
     def add_spatial_noise(self, noise_radius, f_mean, f_size, N = 30, A = 1):
@@ -339,3 +261,40 @@ class MonochromaticField:
 
         self.E += E_noise *bd.exp(-(self.xx**2 + self.yy**2)/ (noise_radius)**2)
         self.I = bd.real(self.E * bd.conjugate(self.E)) 
+
+
+    def get_longitudinal_profile(self, start_distance, end_distance, steps):
+        """
+        Propagates the field at n steps equally spaced between start_distance and end_distance, and returns
+        the colors and the intensity over the xz plane
+        """
+
+        z = bd.linspace(start_distance, end_distance, steps)
+
+        self.E0 = bd.copy(self.E)
+
+        longitudinal_profile_rgb = bd.zeros((steps,self.Nx, 3))
+        longitudinal_profile_E = bd.zeros((steps,self.Nx), dtype = complex)
+        z0 = self.z 
+        t0 = time.time()
+
+        bar = progressbar.ProgressBar()
+        for i in bar(range(steps)):
+                 
+            self.propagate(z[i])
+            rgb = self.get_colors()
+            longitudinal_profile_rgb[i,:,:]  = rgb[self.Ny//2,:,:]
+            longitudinal_profile_E[i,:] = self.E[self.Ny//2,:]
+            self.E = np.copy(self.E0)
+
+        # restore intial values
+        self.z = z0
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
+
+        print ("Took", time.time() - t0)
+
+        return longitudinal_profile_rgb, longitudinal_profile_E
+
+
+
+    from .visualization import plot_colors, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity

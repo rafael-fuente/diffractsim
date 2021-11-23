@@ -14,4 +14,4 @@ F.add_aperture_from_image(
 
 F.add_lens(f = 120*cm)
 rgb = F.compute_colors_at(z=120*cm)
-F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])
+F.plot_colors(rgb, xlim=[-8*mm, 8*mm], ylim=[-8*mm, 8*mm])

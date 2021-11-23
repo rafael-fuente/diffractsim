@@ -120,18 +120,26 @@ class PolychromaticField:
             x0 += D
         self.E = self.E*t
 
-
-
-    def add_aperture_from_image(self, path, image_size = None):
+    def add_aperture_from_function(self,function):
         """
-        Load the image specified at "path" as a numpy graymap array. The imagen is centered on the plane and
-        its physical size is specified in image_size parameter as image_size = (float, float)
+        Evaluate a function with arguments 'x : 2D  array' and 'y : 2D array' as the amplitude transmittance of the aperture. 
+        """
+
+        t = function(self.xx, self.yy)
+        self.E = self.E*bd.array(t)
+        return t
+
+
+    def add_aperture_from_image(self, amplitude_mask_path, image_size = None):
+        """
+        Load the image specified at "amplitude_mask_path" as a numpy graymap array represeting the amplitude transmittance of the aperture. 
+        The image is centered on the plane and its physical size is specified in image_size parameter as image_size = (float, float)
 
         - If image_size isn't specified, the image fills the entire aperture plane
         """
 
 
-        img = Image.open(Path(path))
+        img = Image.open(Path(amplitude_mask_path))
         img = img.convert("RGB")
 
         img_pixels_width, img_pixels_height = img.size
@@ -166,12 +174,13 @@ class PolychromaticField:
         self.lens = True
         self.lens_f = f
 
+        #lens amplitude transmittance
         self.lens_t = 1
         if aberration != None:
             self.lens_t = self.lens_t*bd.exp(2*bd.pi * 1j *aberration(self.xx, self.yy))
 
         if radius != None:
-            self.lens_t = bd.where((self.xx**2 + self.yy**2) < radius**2, self.lens_t, 0)
+            self.lens_t = bd.where((self.xx**2 + self.yy**2) < radius**2, self.lens_t, bd.zeros_like(self.E))
 
 
 
@@ -233,7 +242,7 @@ class PolychromaticField:
         print ("Computation Took", time.time() - t0)
         return rgb
 
-    def plot(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
+    def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
         """visualize the diffraction pattern with matplotlib"""
         plt.style.use("dark_background")
         if bd != np:
@@ -243,10 +252,11 @@ class PolychromaticField:
         ax = fig.add_subplot(1, 1, 1)
 
         if xlim != None:
-            ax.set_xlim(xlim)
+            ax.set_xlim(np.array(xlim)/mm)
 
         if ylim != None:
-            ax.set_ylim(ylim)
+            ax.set_ylim(np.array(ylim)/mm)
+
         ax.set_xlabel("[mm]")
         ax.set_ylabel("[mm]")
 
@@ -256,10 +266,10 @@ class PolychromaticField:
         im = ax.imshow(
             (rgb),
             extent=[
-                -self.extent_x / 2 / mm,
-                self.extent_x / 2 / mm,
-                -self.extent_y / 2 / mm,
-                self.extent_y / 2 / mm,
+                float(self.x[0]) / mm,
+                float(self.x[-1]) / mm,
+                float(self.y[0] )/ mm,
+                float(self.y[-1]) / mm,
             ],
             interpolation="spline36", origin = "lower"
         )
@@ -277,3 +287,6 @@ class PolychromaticField:
     def add_spatial_noise(self, noise_radius, f_mean, f_size, N = 30, A = 1):
 
         raise NotImplementedError(self.__class__.__name__ + '.add_spatial_noise')
+
+
+    from .visualization import plot_colors

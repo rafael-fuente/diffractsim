@@ -8,21 +8,20 @@ F = MonochromaticField(
 )
 
 F.add_aperture_from_image(
-    "./apertures/QWT.png",  image_size =(14 * mm, 14 * mm), Nx=2300, Ny=2300
+    "./apertures/QWT.png",  image_size =(14 * mm, 14 * mm)
 )
 
 #image at z = 0*cm
 rgb = F.get_colors()
-F.plot(rgb, xlim=[-5.0,5.0], ylim=[-5.0,5.0])
+F.plot_colors(rgb, xlim=[-5.0*mm,5.0*mm], ylim=[-5.0*mm,5.0*mm])
 
 
 F.propagate(50*cm)
 
-F.add_lens(f = 25*cm)
-F.add_circular_slit( 0, 0, 6*mm) # we model the entrance pupil of the lens as a circular aperture
+F.add_lens(f = 25*cm, radius = 6*mm)
 
 F.propagate(50*cm)
 
 #image at z = 100*cm
 rgb = F.get_colors()
-F.plot(rgb, xlim=[-5.0,5.0], ylim=[-5.0,5.0])
+F.plot_colors(rgb, xlim=[-5.0*mm,5.0*mm], ylim=[-5.0*mm,5.0*mm])

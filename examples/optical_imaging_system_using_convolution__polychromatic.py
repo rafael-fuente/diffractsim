@@ -28,29 +28,20 @@ def propagate_to_image_plane(F, radius, zi, z0):
     #magnification factor
     M = zi/z0
     fun = interp2d(
-                np.linspace(-F.extent_x / 2, F.extent_x / 2, F.E.shape[1]),
-                np.linspace(-F.extent_y / 2, F.extent_y / 2, F.E.shape[0]),
+                F.extent_x*(np.arange(F.Nx)-F.Nx//2)/F.Nx,
+                F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny,
                 F.E,
                 kind="cubic",)
     
-    F.E = fun(np.linspace(
-              -F.extent_x / 2 , F.extent_x / 2 , F.E.shape[1])/M, 
-              np.linspace(-F.extent_y / 2 , F.extent_y / 2 ,F.E.shape[0])/M )/M
+    F.E = fun(F.extent_x*(np.arange(F.Nx)-F.Nx//2)/F.Nx/M, 
+               F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny/M )/M
     F.E = bd.array(np.flip(F.E))
 
     fft_c = bd.fft.fft2(F.E)
     c = bd.fft.fftshift(fft_c)
 
-    fx = bd.linspace(
-        -1/2 * F.Nx // 2 / (F.extent_x / 2),
-        1/2 * F.Nx // 2 / (F.extent_x / 2),
-        F.Nx,
-    )
-    fy = bd.linspace(
-        -1/2 * F.Ny // 2 / (F.extent_y / 2),
-        1/2 * F.Ny // 2 / (F.extent_y / 2),
-        F.Ny,
-    )
+    fx = bd.fft.fftshift(bd.fft.fftfreq(F.Nx, d = F.x[1]-F.x[0]))
+    fy = bd.fft.fftshift(bd.fft.fftfreq(F.Ny, d = F.y[1]-F.y[0]))
     fx, fy = bd.meshgrid(fx, fy)
     fp = bd.sqrt(fx**2 + fy**2)
 
@@ -64,7 +55,7 @@ def propagate_to_image_plane(F, radius, zi, z0):
     t0 = time.time()
 
     for i in bar(range(F.spectrum_divisions)):
-        #Definte the OTF function, representing the Fourier transform of the circular pupil function.
+        #Definte the ATF function, representing the Fourier transform of the circular pupil function.
         H = bd.select(
             [fp * zi* F.λ_list_samples[i]* nm < radius , bd.ones_like(fp, dtype= bool)], [bd.ones_like(fp), bd.zeros_like(fp)]
         )
@@ -110,4 +101,4 @@ F.add_aperture_from_image(
 
 rgb = propagate_to_image_plane(F,radius = 5*mm, zi = 50*cm, z0 = 50*cm)
 
-F.plot(rgb, figsize=(5, 5), xlim=[-f*0.4,f*0.4], ylim=[-f*0.4,f*0.4])
+F.plot_colors(rgb, figsize=(5, 5), xlim=[-f*0.4*mm,f*0.4*mm], ylim=[-f*0.4*mm,f*0.4*mm])

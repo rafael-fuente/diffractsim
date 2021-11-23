@@ -15,4 +15,4 @@ F.add_aperture_from_image(
     "./apertures/rectangular_grating.jpg",image_size = (1.2 * mm,1.2 * mm)
 )
 rgb = F.compute_colors_at(100*cm)
-F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])
+F.plot_colors(rgb, xlim=[-8*mm, 8*mm], ylim=[-8*mm, 8*mm])

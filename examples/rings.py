@@ -16,4 +16,4 @@ F.add_aperture_from_image(
     "./apertures/rings.jpg", image_size = (12.0 * mm,12.0 * mm)
 )
 rgb = F.compute_colors_at(150*cm)
-F.plot(rgb, xlim=[-8, 8], ylim=[-8, 8])
+F.plot_colors(rgb, xlim=[-8*mm, 8*mm], ylim=[-8*mm, 8*mm])
