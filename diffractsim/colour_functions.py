@@ -3,14 +3,14 @@ from pathlib import Path
 from scipy.interpolate import CubicSpline
 from .monochromatic_simulator import MonochromaticField
 
-from .backend_functions import backend as bd
+from .util.backend_functions import backend as bd
 
 illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
 
 class ColourSystem:
     def __init__(self, spectrum_size = 400, spec_divisions = 40, clip_method = 1):
         global bd
-        from .backend_functions import backend as bd
+        from .util.backend_functions import backend as bd
 
         self.spectrum_size = spectrum_size
         # import CIE XYZ standard observer color matching functions

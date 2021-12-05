@@ -5,15 +5,11 @@ from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
 import time
+from .util.image_handling import convert_graymap_image_to_hsvmap_image, rescale_img_to_simulation_coordinates
 
 import numpy as np
-from .backend_functions import backend as bd
-
-m = 1.
-cm = 1e-2
-mm = 1e-3
-um = 1e-6
-nm = 1e-9
+from .util.backend_functions import backend as bd
+from .util.constants import *
 
 
 
@@ -21,7 +17,7 @@ nm = 1e-9
 class PolychromaticField:
     def __init__(self, spectrum, extent_x, extent_y, Nx, Ny, spectrum_size = 180, spectrum_divisions = 30):
         global bd
-        from .backend_functions import backend as bd
+        from .util.backend_functions import backend as bd
 
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -59,14 +55,10 @@ class PolychromaticField:
         """
         Creates a slit centered at the point (x0, y0) with width width and height height
         """
-        t = bd.select(
-            [
-                ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
-                & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
-                bd.ones_like(self.E, dtype=bool),
-            ],
-            [bd.ones_like(self.E), bd.zeros_like(self.E)],
-        )
+        t = bd.where((((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
+                        & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2)))),
+                        bd.ones_like(self.E), bd.zeros_like(self.E))
+        
         self.E = self.E*t
 
     def add_circular_slit(self, x0, y0, R):
@@ -130,7 +122,7 @@ class PolychromaticField:
         return t
 
 
-    def add_aperture_from_image(self, amplitude_mask_path, image_size = None):
+    def add_aperture_from_image(self, amplitude_mask_path= None, phase_mask_path= None, image_size = None, phase_mask_format = 'hsv'):
         """
         Load the image specified at "amplitude_mask_path" as a numpy graymap array represeting the amplitude transmittance of the aperture. 
         The image is centered on the plane and its physical size is specified in image_size parameter as image_size = (float, float)
@@ -138,35 +130,41 @@ class PolychromaticField:
         - If image_size isn't specified, the image fills the entire aperture plane
         """
 
+        if amplitude_mask_path != None:
+            
+            #load the amplitude_mask image
+            img = Image.open(Path(amplitude_mask_path))
+            img = img.convert("RGB")
 
-        img = Image.open(Path(amplitude_mask_path))
-        img = img.convert("RGB")
+            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            imgRGB = np.asarray(rescaled_img) / 255.0
 
-        img_pixels_width, img_pixels_height = img.size
+            t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
+            t = bd.array(np.flip(t, axis = 0))
 
-        if image_size != None:
-            new_img_pixels_width, new_img_pixels_height = int(np.round(image_size[0] / self.extent_x  * self.Nx)),  int(np.round(image_size[1] / self.extent_y  * self.Ny))
-        else:
-            #by default, the image fills the entire aperture plane
-            new_img_pixels_width, new_img_pixels_height = self.Nx, self.Ny
+            self.E = self.E*t
 
-        img = img.resize((new_img_pixels_width, new_img_pixels_height))
 
-        dst_img = Image.new("RGB", (self.Nx, self.Ny), "black" )
-        dst_img_pixels_width, dst_img_pixels_height = dst_img.size
+        if phase_mask_path != None:
+            from matplotlib.colors import rgb_to_hsv
 
-        Ox, Oy = (dst_img_pixels_width-new_img_pixels_width)//2, (dst_img_pixels_height-new_img_pixels_height)//2
-        
-        dst_img.paste( img , box = (Ox, Oy ))
+            #load the phase_mask image
+            img = Image.open(Path(phase_mask_path))
+            img = img.convert("RGB")
 
-        imgRGB = np.asarray(dst_img) / 255.0
-        imgR = imgRGB[:, :, 0]
-        imgG = imgRGB[:, :, 1]
-        imgB = imgRGB[:, :, 2]
-        t = 0.2990 * imgR + 0.5870 * imgG + 0.1140 * imgB
-        t = np.flip(t, axis = 0)
+            if phase_mask_format == 'graymap':
+                img = convert_graymap_image_to_hsvmap_image(img)
+                
+            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            imgRGB = np.asarray(rescaled_img) / 255.0
 
-        self.E = self.E*bd.array(t)
+
+            h = rgb_to_hsv(   np.moveaxis(np.array([imgRGB[:, :, 0],imgRGB[:, :, 1],imgRGB[:, :, 2]]) , 0, -1))[:,:,0]
+            phase_mask = bd.flip(bd.array(h) * 2 * bd.pi - bd.pi, axis = 0)
+            self.E = self.E*bd.exp(1j *  phase_mask)
+
+
+
 
     def add_lens(self, f,radius = None, aberration = None):
         """add a thin lens with a focal length equal to f """
@@ -242,38 +240,6 @@ class PolychromaticField:
         print ("Computation Took", time.time() - t0)
         return rgb
 
-    def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
-        """visualize the diffraction pattern with matplotlib"""
-        plt.style.use("dark_background")
-        if bd != np:
-        	rgb = rgb.get()
-
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1, 1, 1)
-
-        if xlim != None:
-            ax.set_xlim(np.array(xlim)/mm)
-
-        if ylim != None:
-            ax.set_ylim(np.array(ylim)/mm)
-
-        ax.set_xlabel("[mm]")
-        ax.set_ylabel("[mm]")
-
-        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
-        ax.set_aspect("equal")
-
-        im = ax.imshow(
-            (rgb),
-            extent=[
-                float(self.x[0]) / mm,
-                float(self.x[-1]) / mm,
-                float(self.y[0] )/ mm,
-                float(self.y[-1]) / mm,
-            ],
-            interpolation="spline36", origin = "lower"
-        )
-        plt.show()
 
 
     def propagate(self, z, spectrum_divisions=40, grid_divisions=10):

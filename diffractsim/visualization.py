@@ -12,7 +12,7 @@ W = 1
 def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
     """visualize the diffraction pattern colors with matplotlib"""
 
-    from .backend_functions import backend as bd
+    from .util.backend_functions import backend as bd
     plt.style.use("dark_background")
     if bd != np:
         rgb = rgb.get()
@@ -49,7 +49,7 @@ def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
 def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=None, grid = False):
     """visualize the diffraction pattern intesity with matplotlib"""
     
-    from .backend_functions import backend as bd
+    from .util.backend_functions import backend as bd
     plt.style.use("dark_background")
 
     if square_root == False:
@@ -109,7 +109,7 @@ def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=No
 def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_distance, end_distance):
     """visualize the diffraction pattern longitudinal profile colors with matplotlib"""
 
-    from .backend_functions import backend as bd
+    from .util.backend_functions import backend as bd
     plt.style.use("dark_background")
 
     if bd != np:
@@ -130,7 +130,7 @@ def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_dista
 def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_distance, end_distance, square_root = False, grid = False):
     """visualize the diffraction pattern longitudinal profile intensity with matplotlib"""
 
-    from .backend_functions import backend as bd
+    from .util.backend_functions import backend as bd
     plt.style.use("dark_background")
 
     I = bd.real(longitudinal_profile_E*np.conjugate(longitudinal_profile_E))

@@ -5,17 +5,14 @@ from pathlib import Path
 from PIL import Image
 import time
 import progressbar
+from .util.image_handling import convert_graymap_image_to_hsvmap_image, rescale_img_to_simulation_coordinates
+from .util.constants import *
+
 
 import numpy as np
-from .backend_functions import backend as bd
+from .util.backend_functions import backend as bd
 
 
-m = 1.
-cm = 1e-2
-mm = 1e-3
-um = 1e-6
-nm = 1e-9
-W = 1
 
 
 
@@ -34,7 +31,7 @@ class MonochromaticField:
         intensity: intensity of the field
         """
         global bd
-        from .backend_functions import backend as bd
+        from .util.backend_functions import backend as bd
 
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -54,14 +51,10 @@ class MonochromaticField:
         """
         Creates a slit centered at the point (x0, y0) with width width and height height
         """
-        t = bd.select(
-            [
-                ((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
-                & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2))),
-                bd.ones_like(self.E, dtype=bool),
-            ],
-            [bd.ones_like(self.E), bd.zeros_like(self.E)],
-        )
+        t = bd.where((((self.xx > (x0 - width / 2)) & (self.xx < (x0 + width / 2)))
+                        & ((self.yy > (y0 - height / 2)) & (self.yy < (y0 + height / 2)))),
+                        bd.ones_like(self.E), bd.zeros_like(self.E))
+
         self.E = self.E*t
 
         self.I = bd.real(self.E * bd.conjugate(self.E))  
@@ -88,6 +81,7 @@ class MonochromaticField:
         r2 = self.xx**2 + self.yy**2 
         self.E = self.E*bd.exp(-r2/(w0**2))
         self.I = bd.real(self.E * bd.conjugate(self.E))  
+
 
 
 
@@ -132,7 +126,7 @@ class MonochromaticField:
         return t
 
 
-    def add_aperture_from_image(self, amplitude_mask_path, image_size = None):
+    def add_aperture_from_image(self, amplitude_mask_path= None, phase_mask_path= None, image_size = None, phase_mask_format = 'hsv'):
         """
         Load the image specified at "amplitude_mask_path" as a numpy graymap array represeting the amplitude transmittance of the aperture. 
         The image is centered on the plane and its physical size is specified in image_size parameter as image_size = (float, float)
@@ -140,39 +134,43 @@ class MonochromaticField:
         - If image_size isn't specified, the image fills the entire aperture plane
         """
 
+        if amplitude_mask_path != None:
+            
+            #load the amplitude_mask image
+            img = Image.open(Path(amplitude_mask_path))
+            img = img.convert("RGB")
 
-        img = Image.open(Path(amplitude_mask_path))
-        img = img.convert("RGB")
+            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            imgRGB = np.asarray(rescaled_img) / 255.0
 
-        img_pixels_width, img_pixels_height = img.size
+            t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
+            t = bd.array(np.flip(t, axis = 0))
 
-        if image_size != None:
-            new_img_pixels_width, new_img_pixels_height = int(np.round(image_size[0] / self.extent_x  * self.Nx)),  int(np.round(image_size[1] / self.extent_y  * self.Ny))
-        else:
-            #by default, the image fills the entire aperture plane
-            new_img_pixels_width, new_img_pixels_height = self.Nx, self.Ny
+            self.E = self.E*t
 
-        img = img.resize((new_img_pixels_width, new_img_pixels_height))
 
-        dst_img = Image.new("RGB", (self.Nx, self.Ny), "black" )
-        dst_img_pixels_width, dst_img_pixels_height = dst_img.size
+        if phase_mask_path != None:
+            from matplotlib.colors import rgb_to_hsv
 
-        Ox, Oy = (dst_img_pixels_width-new_img_pixels_width)//2, (dst_img_pixels_height-new_img_pixels_height)//2
-        
-        dst_img.paste( img , box = (Ox, Oy ))
+            #load the phase_mask image
+            img = Image.open(Path(phase_mask_path))
+            img = img.convert("RGB")
 
-        imgRGB = np.asarray(dst_img) / 255.0
-        imgR = imgRGB[:, :, 0]
-        imgG = imgRGB[:, :, 1]
-        imgB = imgRGB[:, :, 2]
-        t = 0.2990 * imgR + 0.5870 * imgG + 0.1140 * imgB
-        t = np.flip(t, axis = 0)
+            if phase_mask_format == 'graymap':
+                img = convert_graymap_image_to_hsvmap_image(img)
+                
+            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            imgRGB = np.asarray(rescaled_img) / 255.0
 
-        self.E = self.E*bd.array(t)
+
+            h = rgb_to_hsv(   np.moveaxis(np.array([imgRGB[:, :, 0],imgRGB[:, :, 1],imgRGB[:, :, 2]]) , 0, -1))[:,:,0]
+            phase_mask = bd.flip(bd.array(h) * 2 * bd.pi - bd.pi, axis = 0)
+            self.E = self.E*bd.exp(1j *  phase_mask)
 
 
         # compute Field Intensity
         self.I = bd.real(self.E * bd.conjugate(self.E))  
+
 
 
     def add_lens(self, f, radius = None, aberration = None):
@@ -266,7 +264,7 @@ class MonochromaticField:
     def get_longitudinal_profile(self, start_distance, end_distance, steps):
         """
         Propagates the field at n steps equally spaced between start_distance and end_distance, and returns
-        the colors and the intensity over the xz plane
+        the colors and the field over the xz plane
         """
 
         z = bd.linspace(start_distance, end_distance, steps)

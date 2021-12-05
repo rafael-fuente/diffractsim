@@ -1,5 +1,5 @@
 from scipy.special import gamma
-from .backend_functions import backend as bd
+from .util.backend_functions import backend as bd
 
 def zernike_polynomial(n,m, x, y):
     """
@@ -15,7 +15,7 @@ def zernike_polynomial(n,m, x, y):
     """
 
     global bd
-    from .backend_functions import backend as bd
+    from .util.backend_functions import backend as bd
 
     𝜃 = bd.arctan2(y,x)
     r = bd.sqrt(x*x + y*y)

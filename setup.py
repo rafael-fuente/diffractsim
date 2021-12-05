@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 long_description = """
 # Diffraction Simulations - Angular Spectrum Method
@@ -10,7 +10,7 @@ How the method and the simulator work is described in this [Article](https://raf
 
 setup(
     name='diffractsim',
-    version='1.6.0',
+    version='1.7.1',
     description='Implementation of the angular spectrum method in Python to simulate diffraction patterns',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -20,7 +20,7 @@ setup(
     author='Rafael de la Fuente',
     author_email='rafael.fuente.herrezuelo@gmail.com',
     license='BSD-3-Clause',
-    packages=['diffractsim'],
+    packages=find_packages(),
     install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

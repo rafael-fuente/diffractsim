@@ -12,6 +12,7 @@ How the method and the simulator work is described in this [Article](https://raf
 - [x] Arbitrary apertures
 - [x] Arbitrary light spectrums
 - [x] Lenses
+- [x] Phase holograms generation and reconstruction
 - [x] GPU acceleration
 
 
