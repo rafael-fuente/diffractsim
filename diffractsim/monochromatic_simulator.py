@@ -36,8 +36,11 @@ class MonochromaticField:
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.x = self.extent_x*(bd.arange(Nx)-Nx//2)/Nx
-        self.y = self.extent_y*(bd.arange(Ny)-Ny//2)/Ny
+        self.dx = self.extent_x/Nx
+        self.dy = self.extent_y/Ny
+
+        self.x = self.dx*(bd.arange(Nx)-Nx//2)
+        self.y = self.dy*(bd.arange(Ny)-Ny//2)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
         self.Nx = bd.int(Nx)
@@ -171,7 +174,16 @@ class MonochromaticField:
         # compute Field Intensity
         self.I = bd.real(self.E * bd.conjugate(self.E))  
 
+    def compute_fft(self):
+        """compute the field in distance equal to z with the angular spectrum method"""
 
+
+        # compute angular spectrum
+        fft_c = bd.fft.fft2(self.E)
+        self.E = bd.fft.fftshift(fft_c)
+
+        # compute Field Intensity
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
 
     def add_lens(self, f, radius = None, aberration = None):
         """add a thin lens with a focal length equal to f """
@@ -195,8 +207,8 @@ class MonochromaticField:
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
 
-        kx = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
-        ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
+        kx = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.dx))
+        ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.dy))
         kx, ky = bd.meshgrid(kx, ky)
 
         argument = (2 * bd.pi / self.λ) ** 2 - kx ** 2 - ky ** 2

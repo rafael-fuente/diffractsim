@@ -36,9 +36,9 @@ def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
         (rgb),
         extent=[
             float(self.x[0]) / mm,
-            float(self.x[-1]) / mm,
+            float(self.x[-1] + self.dx) / mm,
             float(self.y[0] )/ mm,
-            float(self.y[-1]) / mm,
+            float(self.y[-1] + self.dy) / mm,
         ],
         interpolation="spline36", origin = "lower"
     )
@@ -87,9 +87,9 @@ def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=No
         I, cmap= 'inferno',
         extent=[
             float(self.x[0]) / mm,
-            float(self.x[-1]) / mm,
+            float(self.x[-1] + self.dx) / mm,
             float(self.y[0] )/ mm,
-            float(self.y[-1]) / mm,
+            float(self.y[-1] + self.dy) / mm,
         ],
         interpolation="spline36", origin = "lower"
     )
@@ -123,7 +123,7 @@ def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_dista
     ax1.set_xlabel('Screen Distance [cm]')
     ax1.set_title("Longitudinal Profile")
 
-    im = ax1.imshow(longitudinal_profile_rgb,  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1]) / mm],  interpolation='spline36', aspect = 'auto')
+    im = ax1.imshow(longitudinal_profile_rgb,  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1] + self.dx) / mm],  interpolation='spline36', aspect = 'auto')
     plt.show()
 
 
@@ -159,7 +159,7 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_dis
     if grid == True:
         ax1.grid(alpha =0.2)
 
-    im = ax1.imshow(I, cmap= 'inferno',  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1]) / mm],  interpolation='spline36', aspect = 'auto')
+    im = ax1.imshow(I, cmap= 'inferno',  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1]+ self.dx) / mm],  interpolation='spline36', aspect = 'auto')
     
     cb = fig.colorbar(im, orientation = 'vertical')
 
