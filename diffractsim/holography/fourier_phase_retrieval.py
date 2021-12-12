@@ -1,14 +1,15 @@
 import numpy as np
-from .util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
-from .util.image_handling import resize_array
+from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
+from ..util.image_handling import resize_array
 
-from .util.backend_functions import backend as bd
+from ..util.backend_functions import backend as bd
 
-class PhaseRetrieval():
+class FourierPhaseRetrieval():
     def __init__(self, target_amplitude_path, source_amplitude_path = None, new_size = None, pad = None):
+        "class for retrieve the phase mask required to reconstruct an image (specified at target amplitude path) at the Fourier plane"
 
         global bd
-        from .util.backend_functions import backend as bd
+        from ..util.backend_functions import backend as bd
 
         self.target_amplitude = np.array(load_graymap_image_as_array(target_amplitude_path, new_size = new_size))
         
@@ -65,8 +66,6 @@ class PhaseRetrieval():
         
     def save_retrieved_phase_as_image(self, name):
 
-        global bd
-        from .util.backend_functions import backend as bd
 
         if bd == np:
             save_phase_mask_as_image(name, self.retrieved_phase)

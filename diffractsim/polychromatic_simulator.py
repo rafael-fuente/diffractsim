@@ -139,7 +139,7 @@ class PolychromaticField:
             img = Image.open(Path(amplitude_mask_path))
             img = img.convert("RGB")
 
-            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            rescaled_img = rescale_img_to_simulation_coordinates(img, image_size , self.extent_x,self.extent_y, self.Nx, self.Ny)
             imgRGB = np.asarray(rescaled_img) / 255.0
 
             t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
@@ -158,7 +158,7 @@ class PolychromaticField:
             if phase_mask_format == 'graymap':
                 img = convert_graymap_image_to_hsvmap_image(img)
                 
-            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            rescaled_img = rescale_img_to_simulation_coordinates(img, image_size , self.extent_x,self.extent_y, self.Nx, self.Ny)
             imgRGB = np.asarray(rescaled_img) / 255.0
 
 

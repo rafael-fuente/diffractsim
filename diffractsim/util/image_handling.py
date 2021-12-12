@@ -2,19 +2,19 @@ from PIL import Image
 import numpy as np
 
 
-def rescale_img_to_simulation_coordinates(sim, img, image_size):
+def rescale_img_to_simulation_coordinates(img, image_size, extent_x,extent_y, Nx, Ny):
 
     img_pixels_width, img_pixels_height = img.size
 
     if image_size != None:
-        new_img_pixels_width, new_img_pixels_height = int(np.round(image_size[0] / sim.extent_x  * sim.Nx)),  int(np.round(image_size[1] / sim.extent_y  * sim.Ny))
+        new_img_pixels_width, new_img_pixels_height = int(np.round(image_size[0] / extent_x  * Nx)),  int(np.round(image_size[1] / extent_y  * Ny))
     else:
         #by default, the image fills the entire aperture plane
-        new_img_pixels_width, new_img_pixels_height = sim.Nx, sim.Ny
+        new_img_pixels_width, new_img_pixels_height = Nx, Ny
 
     img = img.resize((new_img_pixels_width, new_img_pixels_height))
 
-    dst_img = Image.new("RGB", (sim.Nx, sim.Ny), "black" )
+    dst_img = Image.new("RGB", (Nx, Ny), "black" )
     dst_img_pixels_width, dst_img_pixels_height = dst_img.size
 
     Ox, Oy = (dst_img_pixels_width-new_img_pixels_width)//2, (dst_img_pixels_height-new_img_pixels_height)//2

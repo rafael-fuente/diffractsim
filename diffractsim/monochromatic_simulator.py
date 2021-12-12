@@ -143,7 +143,7 @@ class MonochromaticField:
             img = Image.open(Path(amplitude_mask_path))
             img = img.convert("RGB")
 
-            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            rescaled_img = rescale_img_to_simulation_coordinates(img, image_size , self.extent_x,self.extent_y, self.Nx, self.Ny)
             imgRGB = np.asarray(rescaled_img) / 255.0
 
             t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
@@ -162,7 +162,7 @@ class MonochromaticField:
             if phase_mask_format == 'graymap':
                 img = convert_graymap_image_to_hsvmap_image(img)
                 
-            rescaled_img = rescale_img_to_simulation_coordinates(self, img, image_size)
+            rescaled_img = rescale_img_to_simulation_coordinates(img, image_size , self.extent_x,self.extent_y, self.Nx, self.Ny)
             imgRGB = np.asarray(rescaled_img) / 255.0
 
 
@@ -170,17 +170,6 @@ class MonochromaticField:
             phase_mask = bd.flip(bd.array(h) * 2 * bd.pi - bd.pi, axis = 0)
             self.E = self.E*bd.exp(1j *  phase_mask)
 
-
-        # compute Field Intensity
-        self.I = bd.real(self.E * bd.conjugate(self.E))  
-
-    def compute_fft(self):
-        """compute the field in distance equal to z with the angular spectrum method"""
-
-
-        # compute angular spectrum
-        fft_c = bd.fft.fft2(self.E)
-        self.E = bd.fft.fftshift(fft_c)
 
         # compute Field Intensity
         self.I = bd.real(self.E * bd.conjugate(self.E))  
@@ -223,6 +212,8 @@ class MonochromaticField:
 
         # compute Field Intensity
         self.I = bd.real(E * bd.conjugate(E))  
+
+
 
     def get_colors(self):
         """ compute RGB colors"""
