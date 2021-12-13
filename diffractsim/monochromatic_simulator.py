@@ -215,6 +215,55 @@ class MonochromaticField:
 
 
 
+    def scale_propagate(self, z, scale_factor):
+        """
+        Compute the field in distance equal to z with the two step Fresnel propagator, rescaling the field in the new coordinates
+        with extent equal to:
+        new_extent_x = scale_factor * self.extent_x
+        new_extent_y = scale_factor * self.extent_y
+
+        Note that unlike within in the propagate method, Fresnel approximation is used here.
+        Reference: VOELZ, D. G. (2011). Computational Fourier optics: a MATLAB tutorial. Bellingham, Wash, SPIE.
+        """
+
+
+        L1 = self.extent_x
+        L2 = self.extent_x*scale_factor
+
+        self.z += z
+
+
+        fft_E = bd.fft.fftshift(bd.fft.fft2(self.E * np.exp(1j * np.pi/(z * self.λ) * (L1-L2)/L1 * (self.xx**2 + self.yy**2) )  ))
+        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.dx))
+        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.dy))
+        fx, fy = bd.meshgrid(fx, fy)
+
+        E = bd.fft.ifft2(bd.fft.ifftshift( bd.exp(- 1j * np.pi * self.λ * z * L1/L2 * (fx**2 + fy**2))  *  fft_E) )
+
+
+        self.extent_x = self.extent_x*scale_factor
+        self.extent_y = self.extent_y*scale_factor
+
+        self.dx = self.dx*scale_factor
+        self.dy = self.dy*scale_factor
+
+        self.x = self.x*scale_factor
+        self.y = self.y*scale_factor
+
+        self.xx = self.xx*scale_factor
+        self.yy = self.yy*scale_factor
+
+
+        E = L1/L2 * bd.exp(1j * 2*np.pi/self.λ * z   - 1j * np.pi/(z * self.λ)* (L1-L2)/L2 * (self.xx**2 + self.yy**2)) * E
+        self.E = E
+
+        # compute Field Intensity
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
+
+
+
+
+
     def get_colors(self):
         """ compute RGB colors"""
 
