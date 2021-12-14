@@ -4,7 +4,7 @@ diffractsim.set_backend("CUDA")
 from diffractsim import PolychromaticField, cf, mm, cm
 
 def propagate_to_image_plane(F, radius, zi, z0):
-    from diffractsim.backend_functions import backend as bd
+    from diffractsim.util.backend_functions import backend as bd
     import numpy as np
     from scipy.interpolate import interp2d
     from pathlib import Path
