@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
 
 long_description = """
-# Diffraction Simulations - Angular Spectrum Method
-Implementation of the angular spectrum method in Python to simulate diffraction patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light also with arbitrary spectrums.
+# Diffractsim: A diffraction simulator for exploring and visualizing physical optics
+Implementation of the angular spectrum method as well as other light propagation methods in Python to simulate diffraction patterns with arbitrary apertures. You can use it for simulating both monochromatic and polychromatic light also with arbitrary spectrums.
 
-How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
+How the method and the simulator works is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 """
 
 
 setup(
     name='diffractsim',
-    version='1.7.2',
-    description='Implementation of the angular spectrum method in Python to simulate diffraction patterns',
+    version='2.0.0',
+    description='A diffraction simulator for exploring and visualizing physical optics',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method',

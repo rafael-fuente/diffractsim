@@ -37,6 +37,9 @@ def propagate_to_image_plane(F, radius, zi, z0):
                F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny/M )/M
     F.E = bd.array(np.flip(F.E))
 
+    for j in range(len(F.optical_elements)):
+        F.E = F.E * F.optical_elements[j].get_transmittance(F.xx, F.yy, 0)
+
     fft_c = bd.fft.fft2(F.E)
     c = bd.fft.fftshift(fft_c)
 
@@ -78,7 +81,7 @@ def propagate_to_image_plane(F, radius, zi, z0):
 
 
 
-from diffractsim import MonochromaticField, nm, mm, cm
+from diffractsim import MonochromaticField, ApertureFromImage, nm, mm, cm
 
 
 f = 1
@@ -92,12 +95,7 @@ F = PolychromaticField(
 )
 
 
-
-
-
-F.add_aperture_from_image(
-    "./apertures/horse.png",  image_size=(f *1.0 * mm, f *1.0 * mm)
-)
+F.add(ApertureFromImage( "./apertures/horse.png",  image_size=(f *1.0 * mm, f *1.0 * mm), simulation = F))
 
 rgb = propagate_to_image_plane(F,radius = 5*mm, zi = 50*cm, z0 = 50*cm)
 

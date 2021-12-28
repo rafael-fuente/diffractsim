@@ -1,7 +1,7 @@
 import diffractsim
 diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU acceleration
 
-from diffractsim import PolychromaticField, cf, mm, cm
+from diffractsim import PolychromaticField, ApertureFromImage, cf, mm, cm
 
 F = PolychromaticField(
     spectrum=1 * cf.illuminant_d65,
@@ -11,8 +11,9 @@ F = PolychromaticField(
     Ny=1500,
 )
 
-F.add_aperture_from_image(
-    "./apertures/rectangular_grating.jpg", image_size=(10 * mm, 10 * mm)
-)
-rgb = F.compute_colors_at(30*cm)
+F.add(ApertureFromImage("./apertures/rectangular_grating.jpg",image_size = (10 * mm, 10 * mm), simulation = F))
+
+F.propagate(30*cm)
+
+rgb = F.get_colors()
 F.plot_colors(rgb, xlim=[-8*mm, 8*mm], ylim=[-8*mm, 8*mm])

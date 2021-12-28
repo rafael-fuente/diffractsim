@@ -1,7 +1,7 @@
 import diffractsim
 diffractsim.set_backend("CUDA") #Change the string to "CUDA" to use GPU acceleration
 
-from diffractsim import MonochromaticField, mm, nm, cm, FourierPhaseRetrieval
+from diffractsim import MonochromaticField, ApertureFromImage, Lens, mm, nm, cm, FourierPhaseRetrieval
 
 
 # Generate a Fourier plane phase hologram
@@ -17,17 +17,16 @@ F = MonochromaticField(
 
 
 # load the hologram as a phase mask aperture
-F.add_aperture_from_image(
+F.add(ApertureFromImage(
      amplitude_mask_path= "./apertures/white_background.png", 
-     phase_mask_path= "snowflake_phase_hologram.png", image_size=(10.0 * mm, 10.0 * mm)
-)
+     phase_mask_path= "snowflake_phase_hologram.png", image_size=(10.0 * mm, 10.0 * mm), simulation = F))
 
 # plot colors at z = 0
 rgb = F.get_colors()
 F.plot_colors(rgb)
 
 # propagate field to Fourier plane
-F.add_lens(f = 80*cm) 
+F.add(Lens(f = 80*cm))
 F.propagate(80*cm)
 
 

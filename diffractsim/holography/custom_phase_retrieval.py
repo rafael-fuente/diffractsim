@@ -2,7 +2,7 @@ import numpy as np
 from ..util.backend_functions import backend as bd
 
 from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
-from ..util.image_handling import rescale_img_to_simulation_coordinates
+from ..util.image_handling import rescale_img_to_custom_coordinates
 from ..monochromatic_simulator import MonochromaticField
 from pathlib import Path
 from PIL import Image
@@ -40,7 +40,7 @@ class CustomPhaseRetrieval():
         img = Image.open(Path(amplitude_mask_path))
         img = img.convert("RGB")
 
-        rescaled_img = rescale_img_to_simulation_coordinates(img, image_size, self.extent_x, self.extent_y, self.Nx, self.Ny)
+        rescaled_img = rescale_img_to_custom_coordinates(img, image_size, self.extent_x, self.extent_y, self.Nx, self.Ny)
         imgRGB = np.asarray(rescaled_img) / 255.0
 
         t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
@@ -56,7 +56,7 @@ class CustomPhaseRetrieval():
         img = Image.open(Path(amplitude_mask_path))
         img = img.convert("RGB")
 
-        rescaled_img = rescale_img_to_simulation_coordinates(img, image_size, self.extent_x, self.extent_y, self.Nx, self.Ny)
+        rescaled_img = rescale_img_to_custom_coordinates(img, image_size, self.extent_x, self.extent_y, self.Nx, self.Ny)
         imgRGB = np.asarray(rescaled_img) / 255.0
 
         t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]

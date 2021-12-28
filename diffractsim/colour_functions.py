@@ -1,8 +1,6 @@
 import numpy as np
 from pathlib import Path
 from scipy.interpolate import CubicSpline
-from .monochromatic_simulator import MonochromaticField
-
 from .util.backend_functions import backend as bd
 
 illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))

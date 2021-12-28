@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 
 
-def rescale_img_to_simulation_coordinates(img, image_size, extent_x,extent_y, Nx, Ny):
+def rescale_img_to_custom_coordinates(img, image_size, extent_x,extent_y, Nx, Ny):
 
     img_pixels_width, img_pixels_height = img.size
 

@@ -1,11 +1,11 @@
-# Diffraction Simulator - Angular Spectrum Method
+# Diffractsim: A diffraction simulator for exploring and visualizing physical optics
 
 [![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE)
 
-Accurate and easy to use light diffraction simulator, implemented with the angular spectrum method in Python.
+Accurate and easy to use Python light diffraction simulator which includes several propagation and visualization methods. 
 You can use it for simulating the diffraction pattern of an arbitrary aperture, both with monochromatic and polychromatic light.
 
-How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [Youtube video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
+How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
 
 ## Features
 
@@ -14,6 +14,7 @@ How the method and the simulator work is described in this [Article](https://raf
 - [x] Lenses
 - [x] Phase holograms generation and reconstruction
 - [x] GPU acceleration
+- [ ] Incoherent Light (coming soon!)
 
 
 ## Installation

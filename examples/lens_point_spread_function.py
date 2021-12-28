@@ -1,5 +1,5 @@
 import diffractsim
-from diffractsim import MonochromaticField, nm
+from diffractsim import MonochromaticField,Lens, nm
 print(diffractsim.__file__)
 import pylab as pl
 # Change the string to "CUDA" to use GPU acceleration
@@ -19,7 +19,7 @@ F = MonochromaticField(
     Nx=Nx,
     Ny=Ny)
 
-F.add_lens(f=focal_distance)
+F.add(Lens(f=focal_distance))
 F.propagate(focal_distance)
 
 # POST PROCESSING

@@ -1,7 +1,7 @@
 import diffractsim
 diffractsim.set_backend("CUDA")
 
-from diffractsim import PolychromaticField, cf, mm, cm
+from diffractsim import PolychromaticField, ApertureFromImage, cf, mm, cm
 
 def propagate_to_image_plane(F, radius, zi, z0):
     from diffractsim.util.backend_functions import backend as bd
@@ -36,6 +36,11 @@ def propagate_to_image_plane(F, radius, zi, z0):
     F.E = fun(F.extent_x*(np.arange(F.Nx)-F.Nx//2)/F.Nx/M, 
                F.extent_y*(np.arange(F.Ny)-F.Ny//2)/F.Ny/M )/M
     F.E = bd.array(np.flip(F.E))
+
+    for j in range(len(F.optical_elements)):
+        F.E = F.E * F.optical_elements[j].get_transmittance(F.xx, F.yy, 0)
+
+
     Ip = F.E * np.conjugate(F.E)
     
     fft_c = bd.fft.fft2(Ip)
@@ -90,12 +95,7 @@ F = PolychromaticField(
 )
 
 
-
-
-
-F.add_aperture_from_image(
-    "./apertures/horse.png",  image_size=(f *1.0 * mm, f *1.0 * mm)
-)
+F.add(ApertureFromImage( "./apertures/horse.png",  image_size=(f *1.0 * mm, f *1.0 * mm), simulation = F))
 
 rgb = propagate_to_image_plane(F,radius = 5*mm, zi = 50*cm, z0 = 50*cm)
 

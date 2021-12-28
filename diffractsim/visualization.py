@@ -106,7 +106,7 @@ def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=No
 
 
 
-def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_distance, end_distance):
+def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_distance, end_distance, xlim=None, ylim=None):
     """visualize the diffraction pattern longitudinal profile colors with matplotlib"""
 
     from .util.backend_functions import backend as bd
@@ -122,12 +122,18 @@ def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_dista
         
     ax1.set_xlabel('Screen Distance [cm]')
     ax1.set_title("Longitudinal Profile")
+    ax1.set_ylabel("[mm]")
+    if xlim != None:
+        ax1.set_xlim(np.array(xlim)/cm)
+
+    if ylim != None:
+        ax1.set_ylim(np.array(ylim)/mm)
 
     im = ax1.imshow(longitudinal_profile_rgb,  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1] + self.dx) / mm],  interpolation='spline36', aspect = 'auto')
     plt.show()
 
 
-def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_distance, end_distance, square_root = False, grid = False):
+def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_distance, end_distance, square_root = False, grid = False, xlim=None, ylim=None):
     """visualize the diffraction pattern longitudinal profile intensity with matplotlib"""
 
     from .util.backend_functions import backend as bd
@@ -148,12 +154,17 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_dis
         else:
             I = np.sqrt(I)
 
+    if xlim != None:
+        ax1.set_xlim(np.array(xlim)/cm)
+
+    if ylim != None:
+        ax1.set_ylim(np.array(ylim)/mm)
 
     fig = plt.figure(figsize=(16/9 *6,6)) 
     ax1 = fig.add_subplot(1,1,1)  
 
 
-        
+    ax1.set_ylabel("[mm]")
     ax1.set_xlabel('Screen Distance [cm]')
     ax1.set_title("Longitudinal Profile")
     if grid == True:
