@@ -59,9 +59,9 @@ class FourierPhaseRetrieval():
                 g_p = bd.fft.ifft2(G_p)
 
                 # compute the squared error to test the performance:
-                diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
-                squared_err = (bd.sum(diff**2))
-                print(squared_err)
+                # diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
+                # squared_err = (bd.sum(diff**2))
+                # print(squared_err)
 
             self.retrieved_phase = bd.fft.fftshift(bd.angle(g_p))
 
@@ -90,9 +90,9 @@ class FourierPhaseRetrieval():
                 g_p = bd.fft.ifft2(G_p)
                 
                 # compute the squared error to test the performance
-                diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
-                squared_err = (bd.sum(diff**2))
-                print(squared_err)
+                # diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
+                # squared_err = (bd.sum(diff**2))
+                # print(squared_err)
 
                 g_pp = g_p + CG_step * (g_p - gp_last_iter)
 
@@ -110,7 +110,6 @@ class FourierPhaseRetrieval():
 
                 g_pp = g + CG_step * D
                 """
-                g_pp = g_p + CG_step * (g_p - gp_last_iter)
                 g_pp = bd.abs(source_amplitude) * bd.exp(1j * np.angle(g_pp))
                 gp_last_iter = g_p
                 g = g_pp

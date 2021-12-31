@@ -5,7 +5,7 @@
 Accurate and easy to use Python light diffraction simulator which includes several propagation and visualization methods. 
 You can use it for simulating the diffraction pattern of an arbitrary aperture, both with monochromatic and polychromatic light.
 
-How the method and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [video](https://youtu.be/Ft8CMEooBAE) to see the animated simulations!
+How the main method (angular spectrum) and the simulator work is described in this [Article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1) to see the animated simulations!
 
 ## Features
 
@@ -14,7 +14,7 @@ How the method and the simulator work is described in this [Article](https://raf
 - [x] Lenses
 - [x] Phase holograms generation and reconstruction
 - [x] GPU acceleration
-- [ ] Incoherent Light (coming soon!)
+- [ ] Incoherent Light (coming soon)
 
 
 ## Installation
