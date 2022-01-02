@@ -27,9 +27,9 @@ class CustomPhaseRetrieval():
         self.y = self.dy*(bd.arange(Ny)-Ny//2)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
-        self.Nx = bd.int(Nx)
-        self.Ny = bd.int(Ny)
-        self.E = bd.ones((int(self.Ny), int(self.Nx)))
+        self.Nx = Nx
+        self.Ny = Ny
+        self.E = bd.ones((self.Ny, self.Nx))
         self.wavelength = wavelength
 
 

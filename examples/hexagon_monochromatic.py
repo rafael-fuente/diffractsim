@@ -4,7 +4,7 @@ diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU accelerat
 from diffractsim import MonochromaticField, ApertureFromImage, mm, nm, cm
 
 F = MonochromaticField(
-    wavelength=632.8 * nm, extent_x=18 * mm, extent_y=18 * mm, Nx=1500, Ny=1500
+    wavelength=632.8 * nm, extent_x=18 * mm, extent_y=18 * mm, Nx=1024, Ny=1024
 )
 
 F.add(ApertureFromImage("./apertures/hexagon.jpg", image_size=(5.6 * mm, 5.6 * mm), simulation = F))

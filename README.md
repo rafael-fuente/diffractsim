@@ -1,6 +1,6 @@
 # Diffractsim: A diffraction simulator for exploring and visualizing physical optics
 
-[![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE)
+[![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1)
 
 Accurate and easy to use Python light diffraction simulator which includes several propagation and visualization methods. 
 You can use it for simulating the diffraction pattern of an arbitrary aperture, both with monochromatic and polychromatic light.

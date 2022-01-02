@@ -6,7 +6,7 @@ from PIL import Image
 from pathlib import Path
 
 class ApertureFromImage(DOE):
-    def __init__(self, amplitude_mask_path= None, phase_mask_path= None, image_size = None, phase_mask_format = 'hsv', simulation = None):
+    def __init__(self, amplitude_mask_path= None, phase_mask_path= None, image_size = None, phase_mask_format = 'hsv', amplitude_mask_extent = [0,1], simulation = None):
 
         """
         Load the image specified at "amplitude_mask_path" as a numpy graymap array represeting the amplitude transmittance of the aperture. 
@@ -38,7 +38,7 @@ class ApertureFromImage(DOE):
             t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
             t = bd.array(np.flip(t, axis = 0))
 
-
+            t = t*(amplitude_mask_extent[1] - amplitude_mask_extent[0]) + amplitude_mask_extent[0]
 
         if self.phase_mask_path != None:
             from matplotlib.colors import rgb_to_hsv

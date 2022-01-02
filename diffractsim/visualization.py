@@ -9,7 +9,7 @@ nm = 1e-9
 W = 1
 
 
-def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
+def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None):
     """visualize the diffraction pattern colors with matplotlib"""
 
     from .util.backend_functions import backend as bd
@@ -30,7 +30,10 @@ def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
     ax.set_xlabel("[mm]")
     ax.set_ylabel("[mm]")
 
-    ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
+    if text == None:
+        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
+    else: 
+        ax.set_title(text)
 
     im = ax.imshow(
         (rgb),
@@ -46,7 +49,7 @@ def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None):
 
 
 
-def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=None, grid = False):
+def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None):
     """visualize the diffraction pattern intesity with matplotlib"""
     
     from .util.backend_functions import backend as bd
@@ -82,7 +85,13 @@ def plot_intensity(self, square_root = False, figsize=(7, 6), xlim=None, ylim=No
     ax.set_xlabel("[mm]")
     ax.set_ylabel("[mm]")
 
-    ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
+
+    if text == None:
+        ax.set_title("Screen distance = " + str(self.z * 100) + " cm")
+    else: 
+        ax.set_title(text)
+
+
     im = ax.imshow(
         I, cmap= 'inferno',
         extent=[
