@@ -91,3 +91,30 @@ diffractsim.set_backend("CUDA")
 Cupy and CUDA aren't required to install and use this package, but they can offer a significant speed boost.
 
 The first GPU accelerated run can be slow because Python is caching the required functions. The next time it can be about 10x and 100x faster than a CPU backend depending on your GPU. The speed boost raises as the grid gets larger.
+
+
+Diffractsim can also be used to compute and visualize longitudinal profiles. Since the computation of each propagation distance is independent, it can be fully parallelized, and therefore GPU use is highly recommended.
+
+```
+python lens_longitudinal_profile.py
+```
+
+[![N|Solid](/images/lens_longitudinal_profile.png)](/examples/lens_longitudinal_profile.py)
+
+
+```
+python axicon_longitudinal_profile.py
+```
+
+[![N|Solid](/images/axicon_longitudinal_profile.png)](/examples/axicon_longitudinal_profile.py)
+
+
+The problem of phase retrieval is a classic one in optics and arises when one is interested in retrieving the wavefront from two intensity measurements acquired in two different planes. Diffractsim provides a simple implementation of this problem.
+
+In the following example, the GitHub logo is recovered at the Fourier plane from a coherently illuminated square-shaped aperture. The script generates a phase mask, which is stored as an image using an HSV colormap and then placed on the aperture to reconstruct the desired image.
+
+```
+python phase_hologram_github_logo_generation_and_reconstruction.py
+```
+
+[![animation](/images/github_logo.gif)](/examples/phase_hologram_github_logo_generation_and_reconstruction.py)
