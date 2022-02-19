@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: De la Fuente
     given-names: Rafael
-    orcid: https://orcid.org/0000-0003-4925-7248
+    orcid: https://orcid.org/0000-0002-7126-448X
 title: "diffractsim: A flexible python diffraction simulator"
 doi: 10.5281/zenodo.6147772
 url: https://github.com/rafael-fuente/diffractsim
