@@ -19,7 +19,7 @@ class DOE(ABC):
 
     def get_coherent_PSF(self,  xx, yy, z, λ):
         """ 
-        Get the coherent point spread function (PSF) of the DEO when it acts as the pupil of an imaging system
+        Get the coherent point spread function (PSF) of the DOE when it acts as the pupil of an imaging system
         Exactly, this method returns the result of the following integral:
 
         PSF(x,y) = 1 / (z*λ)**2 * ∫∫  t(u, v) * exp(-1j*pi/ (z*λ) *(u*x + v*y)) * du*dv
@@ -33,7 +33,7 @@ class DOE(ABC):
 
     def get_incoherent_PSF(self,  xx, yy, z, λ):
         """ 
-        Get the incoherent point spread function of the DEO when it acts as the pupil of an imaging system
+        Get the incoherent point spread function of the DOE when it acts as the pupil of an imaging system
         """
         return bd.abs(self.get_coherent_PSF(xx, yy, z, λ))**2
 
@@ -41,14 +41,14 @@ class DOE(ABC):
 
     def get_amplitude_transfer_function(self,  fxx, fyy, z, λ):
         """ 
-        Get the (coherent) amplitude tranfer function (ATF) of the DEO when it acts as the pupil of an imaging system
+        Get the (coherent) amplitude transfer function (ATF) of the DOE when it acts as the pupil of an imaging system
         """
         return self.get_transmittance(-fxx*λ*z, -fyy*λ*z, λ)
 
 
     def get_optical_transfer_function(self,  fxx, fyy, z, λ):
         """ 
-        Get the (incoherent) optical tranfer function (OTF) of the DEO when it acts as the pupil of an imaging system
+        Get the (incoherent) optical transfer function (OTF) of the DOE when it acts as the pupil of an imaging system
         """
         global bd
         from ..util.backend_functions import backend as bd
@@ -76,4 +76,4 @@ class DOE_mix(DOE):
         return self.DOE1.get_transmittance(xx, yy, λ) + self.DOE2.get_transmittance(xx, yy, λ)
 
     def get_coherent_PSF(self, xx, yy, λ):
-        return self.DOE1.get_PSF(xx, yy, z, λ) + self.DOE2.get_PSF(xx, yy, z, λ)
+        return self.DOE1.get_coherent_PSF(xx, yy, z, λ) + self.DOE2.get_coherent_PSF(xx, yy, z, λ)

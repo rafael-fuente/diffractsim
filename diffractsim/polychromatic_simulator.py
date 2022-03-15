@@ -5,7 +5,7 @@ from scipy.interpolate import interp2d
 from pathlib import Path
 from PIL import Image
 import time
-from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method
+from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method, apply_transfer_function
 
 import numpy as np
 from .util.backend_functions import backend as bd
@@ -143,5 +143,74 @@ class PolychromaticField:
 
         scale_factor = 1
         self.steps_args += [[z, scale_factor]]
+
+
+    def get_colors_at_image_plane(self, pupil, zi, z0, scale_factor = 1):
+        from scipy.interpolate import interp2d
+        """
+        zi: distance from the image plane to the lens
+        z0: distance from the lens the current position
+        zi and z0 should satisfy the equation 1/zi + 1/z0 = 1/f 
+        where f is the focal distance of the lens
+        pupil: diffractive optical element used as pupil
+        """
+        self.z += zi + z0
+
+
+        if bd != np:
+            self.E = self.E.get()
+
+        #magnification factor
+        M = zi/z0
+        fun = interp2d(
+                    self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx,
+                    self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny,
+                    self.E,
+                    kind="cubic",)
+        
+        self.E = fun(self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx/M, 
+                   self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny/M )/M
+        self.E = bd.array(np.flip(self.E))
+
+        for j in range(len(self.optical_elements)):
+            self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
+
+        fft_c = bd.fft.fft2(self.E)
+        c = bd.fft.fftshift(fft_c)
+
+        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
+        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
+        fxx, fyy = bd.meshgrid(fx, fy)
+
+        bar = progressbar.ProgressBar()
+
+        # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
+        # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
+        
+        sRGB_linear = bd.zeros((3, self.Nx * self.Ny))
+
+        t0 = time.time()
+
+        for i in bar(range(self.spectrum_divisions)):
+            #Definte the ATF function, representing the Fourier transform of the circular pupil function.
+            H = pupil.get_amplitude_transfer_function(fxx, fyy, zi, self.λ_list_samples[i]* nm)
+
+            E_λ = bd.fft.ifft2(bd.fft.ifftshift(c*H))
+
+            Iλ = bd.real(E_λ * bd.conjugate(E_λ))
+
+            XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
+            sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
+
+        if bd != np:
+            bd.cuda.Stream.null.synchronize()
+
+
+        rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
+        rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
+        print ("Computation Took", time.time() - t0)
+        return rgb
+
+
 
     from .visualization import plot_colors

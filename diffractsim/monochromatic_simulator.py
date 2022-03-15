@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time
 import progressbar
 from .util.constants import *
-from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method
+from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method, apply_transfer_function
 
 import numpy as np
 from .util.backend_functions import backend as bd
@@ -56,11 +56,11 @@ class MonochromaticField:
 
 
 
-    def propagate(self, z):
+    def propagate(self, z, scale_factor = 1):
         """compute the field in distance equal to z with the angular spectrum method"""
 
         self.z += z
-        self.E = angular_spectrum_method(self, self.E, z, self.λ)
+        self.E = angular_spectrum_method(self, self.E, z, self.λ, scale_factor)
 
         # compute Field Intensity
         self.I = bd.real(self.E * bd.conjugate(self.E))  
@@ -85,10 +85,55 @@ class MonochromaticField:
         self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
+
+    def propagate_to_image_plane(self, pupil, zi, z0, scale_factor = 1):
+        from scipy.interpolate import interp2d
+        """
+        zi: distance from the image plane to the lens
+        z0: distance from the lens the current position
+        zi and z0 should satisfy the equation 1/zi + 1/z0 = 1/f 
+        where f is the focal distance of the lens
+        pupil: diffractive optical element used as pupil
+        """
+        self.z += zi + z0
+        
+        #magnification factor
+        M = zi/z0
+
+        if bd == np:
+            fun = interp2d(self.x,self.y,self.E,kind="cubic",)
+            self.E = fun(self.x/M, self.y/M )/M
+            self.E = np.flip(self.E)
+        else: 
+            fun = interp2d(
+                        self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx,
+                        self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny,
+                        self.E,
+                        kind="cubic",)
+            
+            self.E = fun(self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx/M, 
+                       self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny/M )/M
+            self.E = bd.array(np.flip(self.E))
+
+        fft_c = bd.fft.fft2(self.E)
+        c = bd.fft.fftshift(fft_c)
+
+        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
+        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
+        fxx, fyy = bd.meshgrid(fx, fy)
+
+        H = pupil.get_amplitude_transfer_function(fxx, fyy, zi, self.λ)
+
+        self.E = apply_transfer_function(self, self.E, self.λ, H, scale_factor)
+
+        # compute Field Intensity
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
+
+
     def get_colors(self):
         """ compute RGB colors"""
 
-        rgb = self.cs.wavelength_to_sRGB(self.λ / nm, 10 * self.I.flatten()).T.reshape(
+        rgb = self.cs.wavelength_to_sRGB(self.λ / nm, 10 * self.I.ravel()).T.reshape(
             (self.Ny, self.Nx, 3)
         )
         return rgb
