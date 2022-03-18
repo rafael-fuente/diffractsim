@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time
 import progressbar
 from .util.constants import *
-from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method, apply_transfer_function
+from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method, bluestein_method, apply_transfer_function
 
 import numpy as np
 from .util.backend_functions import backend as bd
@@ -56,11 +56,14 @@ class MonochromaticField:
 
 
 
-    def propagate(self, z, scale_factor = 1):
-        """compute the field in distance equal to z with the angular spectrum method"""
+    def propagate(self, z):
+        """
+        Compute the field in distance equal to z with the angular spectrum method
+        The ouplut plane coordinates is the same than the input.
+        """
 
         self.z += z
-        self.E = angular_spectrum_method(self, self.E, z, self.λ, scale_factor)
+        self.E = angular_spectrum_method(self, self.E, z, self.λ)
 
         # compute Field Intensity
         self.I = bd.real(self.E * bd.conjugate(self.E))  
@@ -74,8 +77,10 @@ class MonochromaticField:
         new_extent_x = scale_factor * self.extent_x
         new_extent_y = scale_factor * self.extent_y
 
-        Note that unlike within in the propagate method, Fresnel approximation is used here.
         Reference: VOELZ, D. G. (2011). Computational Fourier optics. Bellingham, Wash, SPIE.
+        
+        Note that unlike within in the propagate method, Fresnel approximation is used here.
+        To arbitrarily choose and zoom in a region of interest, use zoom_propagate method instead.
         """
         
         self.z += z
@@ -85,10 +90,40 @@ class MonochromaticField:
         self.I = bd.real(self.E * bd.conjugate(self.E))  
 
 
+    def zoom_propagate(self, z, x_interval, y_interval):
+        """
+        Compute the field in distance equal to z with the Bluestein method.
+        Bluestein propagation is the more versatile method as the dimensions of the output plane can be arbitrarily chosen by using 
+        the arguments x_interval and y_interval
+
+        Parameters
+        ----------
+
+        x_interval: A length-2 sequence [x1, x2] giving the x outplut plane range
+        y_interval: A length-2 sequence [y1, y2] giving the y outplut plane range
+
+        Example of use:
+        F.zoom_propagate(400*cm, x_interval = [-10*mm, 50*mm], y_interval = [-20*mm, 40*mm])
+
+        Reference: 
+        Hu, Y., Wang, Z., Wang, X. et al. Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method. 
+        Light Sci Appl 9, 119 (2020).
+        """
+        
+        self.z += z
+        self.E = bluestein_method(self, self.E, z, self.λ, x_interval, y_interval)
+
+        # compute Field Intensity
+        self.I = bd.real(self.E * bd.conjugate(self.E))  
+
+
+
 
     def propagate_to_image_plane(self, pupil, zi, z0, scale_factor = 1):
         from scipy.interpolate import interp2d
         """
+        Parameters
+        ----------
         zi: distance from the image plane to the lens
         z0: distance from the lens the current position
         zi and z0 should satisfy the equation 1/zi + 1/z0 = 1/f 

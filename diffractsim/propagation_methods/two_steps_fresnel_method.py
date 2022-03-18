@@ -10,6 +10,8 @@ def two_steps_fresnel_method(simulation, E, z, λ, scale_factor):
 
     Note that unlike within in the propagate method, Fresnel approximation is used here.
     Reference: VOELZ, D. G. (2011). Computational Fourier optics. Bellingham, Wash, SPIE.
+
+    To arbitrarily choose and zoom in a region of interest, use zoom_propagate method instead.
     """
     global bd
     from ..util.backend_functions import backend as bd

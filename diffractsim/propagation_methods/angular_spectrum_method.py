@@ -7,6 +7,7 @@ def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
     Compute the field in distance equal to z with the angular spectrum method. 
     By default (scale_factor = 1), the ouplut plane coordinates is the same than the input.
     Otherwise, it's recommended to use the two_steps_fresnel_method as it's computationally cheaper.
+    To arbitrarily choose and zoom in a region of interest, use bluestein method instead.
 
     Reference: https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html
     """

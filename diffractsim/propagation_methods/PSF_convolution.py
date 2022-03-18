@@ -1,4 +1,3 @@
-import numpy as np
 from ..util.backend_functions import backend as bd
 from ..util.scaled_FT import scaled_fourier_transform
 
@@ -29,9 +28,9 @@ def PSF_convolution(simulation, E, λ, PSF, scale_factor = 1):
         return bd.fft.ifft2(bd.fft.ifftshift(E_f*H /factor ))
 
     else:
-        fx = np.fft.fftshift(np.fft.fftfreq(simulation.Nx, d = simulation.x[1]-simulation.x[0]))
-        fy = np.fft.fftshift(np.fft.fftfreq(simulation.Ny, d = simulation.y[1]-simulation.y[0]))
-        fxx, fyy = np.meshgrid(fx, fy)
+        fx = bd.fft.fftshift(bd.fft.fftfreq(simulation.Nx, d = simulation.x[1]-simulation.x[0]))
+        fy = bd.fft.fftshift(bd.fft.fftfreq(simulation.Ny, d = simulation.y[1]-simulation.y[0]))
+        fxx, fyy = bd.meshgrid(fx, fy)
         extent_fx = (fx[1]-fx[0])*simulation.Nx
         simulation.xx, simulation.yy, E = scaled_fourier_transform(fxx, fyy, E_f*H,  λ = -1, scale_factor = simulation.extent_x/extent_fx * scale_factor, mesh = True)
         simulation.x = simulation.x*scale_factor
@@ -59,9 +58,9 @@ def apply_transfer_function(simulation, E, λ, H, scale_factor = 1):
         return bd.fft.ifft2(bd.fft.ifftshift(E_f*H ))
 
     else:
-        fx = np.fft.fftshift(np.fft.fftfreq(simulation.Nx, d = simulation.x[1]-simulation.x[0]))
-        fy = np.fft.fftshift(np.fft.fftfreq(simulation.Ny, d = simulation.y[1]-simulation.y[0]))
-        fxx, fyy = np.meshgrid(fx, fy)
+        fx = bd.fft.fftshift(bd.fft.fftfreq(simulation.Nx, d = simulation.x[1]-simulation.x[0]))
+        fy = bd.fft.fftshift(bd.fft.fftfreq(simulation.Ny, d = simulation.y[1]-simulation.y[0]))
+        fxx, fyy = bd.meshgrid(fx, fy)
 
         nn_, mm_ = bd.meshgrid(bd.arange(simulation.Nx)-simulation.Nx//2, bd.arange(simulation.Ny)-simulation.Ny//2)
         factor = ((simulation.dx *simulation.dy)* bd.exp(bd.pi*1j * (nn_ + mm_)))
