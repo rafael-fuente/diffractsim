@@ -17,8 +17,8 @@ rgb = F.get_colors()
 F.plot_colors(rgb) 
 
 # propagate the field and scale the viewing extent five times: (new_extent_x = old_extent_x * 5 = 100* mm)
-F.scale_propagate(400*cm, scale_factor = 5)
-
+#F.scale_propagate(400*cm, scale_factor = 5)
+F.zoom_propagate(400*cm, x_interval = [-40. * mm, 40. * mm], y_interval = [-40*mm, 40*mm])
 
 # plot the double slit diffraction pattern
 rgb = F.get_colors()

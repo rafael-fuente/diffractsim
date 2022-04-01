@@ -16,7 +16,8 @@ def chirpz(x, A, W, M):
     Algorithm. IEEE Transactions on Audio and Electroacoustics,
     AU-17(2):86--92, 1969
 
-    Originally Written by Stefan van der Walt: http://www.mail-archive.com/numpy-discussion@scipy.org/msg01812.html
+    Originally Written by Stefan van der Walt: 
+    http://www.mail-archive.com/numpy-discussion@scipy.org/msg01812.html
     
     The discrete z-transform,
     X(z) = \sum_{n=0}^{N-1} x_n z^{-n}

@@ -5,6 +5,16 @@ from ..util.image_handling import convert_graymap_image_to_hsvmap_image, rescale
 from PIL import Image
 from pathlib import Path
 
+"""
+
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
+
 class ApertureFromImage(DOE):
     def __init__(self, amplitude_mask_path= None, phase_mask_path= None, image_size = None, phase_mask_format = 'hsv', amplitude_mask_extent = [0,1], simulation = None):
 
@@ -25,7 +35,8 @@ class ApertureFromImage(DOE):
         self.phase_mask_path = phase_mask_path
         self.image_size = image_size
         self.phase_mask_format = phase_mask_format
-
+        
+        t = 1.
         if self.amplitude_mask_path != None:
             
             #load the amplitude_mask image

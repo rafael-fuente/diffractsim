@@ -1,6 +1,14 @@
 from .backend_functions import backend as bd
 from .chirp_z_transform import chirpz
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
+
 def bluestein_fft(x, axis, f0, f1, fs, M):
     """
     bluestein FFT function to evaluate the DFT
@@ -33,8 +41,6 @@ def bluestein_fft(x, axis, f0, f1, fs, M):
     phi0 = 2.0 * bd.pi * f0 / fs
     phi1 = 2.0 * bd.pi * f1 / fs
     d_phi = (phi1 - phi0) / (M - 1)
-    f0_norm = f0 / (fs / 2.)
-    f1_norm = f1 / (fs / 2.)
 
     # Determine shape of signal
     A = bd.exp(1j * phi0)
@@ -47,6 +53,21 @@ def bluestein_fft(x, axis, f0, f1, fs, M):
 def bluestein_fft2(U, fx0, fx1, fxs,   fy0, fy1, fys):
     """
     bluestein FFT function to evaluate the 2DFT
+
+    Parameters
+    ----------
+
+    U: array to evaluate 2DFT
+
+    fx0: lower bound of x frequency bandwidth
+    fx1: upper bound of x frequency bandwidth
+    fxs: sampling x frequency
+
+    fy0: lower bound of y frequency bandwidth
+    fy1: upper bound of y frequency bandwidth
+    fys: sampling y frequency
+
+
     """
     Ny, Nx = U.shape
     return bluestein_fft( bluestein_fft(U, f0=fy0, f1=fy1, fs=fys, M=Ny, axis=0), f0=fx0, f1=fx1, fs=fxs, M=Nx, axis=1)
@@ -55,7 +76,7 @@ def bluestein_fft2(U, fx0, fx1, fxs,   fy0, fy1, fys):
 
 
 
-def bluestein_ifft(x, axis, f0, f1, fs, M):
+def bluestein_ifft(X, axis, f0, f1, fs, M):
     """
     bluestein iFFT function to evaluate the iDFT
     coefficients for the rows of an array in the frequency range [f0, f1]
@@ -70,6 +91,7 @@ def bluestein_ifft(x, axis, f0, f1, fs, M):
     fs: sampling frequency
     M: number of points used when evaluating the iDFT (N <= signal length)
     axis: axis along which the ifft's are computed (defaults to last axis)
+
     """
     global bd
     from .backend_functions import backend as bd
@@ -79,8 +101,8 @@ def bluestein_ifft(x, axis, f0, f1, fs, M):
 
     N = X.shape[-1]
 
-    phi0 = t0 / dt * 2.0 * bd.pi / N
-    phi1 = t1 / dt * 2.0 * bd.pi / N
+    phi0 = f0 / fs * 2.0 * bd.pi / N
+    phi1 = f1 / fs * 2.0 * bd.pi / N
     d_phi = (phi1 - phi0) / (M - 1)
 
     A = bd.exp(-1j * phi0)
@@ -89,6 +111,27 @@ def bluestein_ifft(x, axis, f0, f1, fs, M):
 
     return bd.swapaxes(a=x, axis1=axis, axis2=-1)
 
+def bluestein_ifft2(U, fx0, fx1, fxs,   fy0, fy1, fys):
+    """
+    bluestein iFFT function to evaluate the i2DFT
+
+    Parameters
+    ----------
+
+    U: array to evaluate 2DFT
+
+    fx0: lower bound of x frequency bandwidth
+    fx1: upper bound of x frequency bandwidth
+    fxs: sampling x frequency
+
+    fy0: lower bound of y frequency bandwidth
+    fy1: upper bound of y frequency bandwidth
+    fys: sampling y frequency
+
+
+    """
+    Ny, Nx = U.shape
+    return bluestein_ifft( bluestein_ifft(U, f0=fy0, f1=fy1, fs=fys, M=Ny, axis=0), f0=fx0, f1=fx1, fs=fxs, M=Nx, axis=1)
 
 
 
@@ -99,9 +142,11 @@ def bluestein_fftfreq(f0, f1, M):
     
     Parameters
     ----------
+
     f0: lower bound of frequency bandwidth
     f1: upper bound of frequency bandwidth
     fs: sampling rate
+    
     """
     global bd
     from .backend_functions import backend as bd

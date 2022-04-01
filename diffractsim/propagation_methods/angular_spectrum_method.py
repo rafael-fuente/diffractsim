@@ -2,6 +2,13 @@ import numpy as np
 from ..util.backend_functions import backend as bd
 from ..util.scaled_FT import scaled_fourier_transform
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
 def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
     """
     Compute the field in distance equal to z with the angular spectrum method. 

@@ -12,6 +12,12 @@ from .util.backend_functions import backend as bd
 from .util.constants import *
 
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
 
 
 class PolychromaticField:
@@ -22,8 +28,8 @@ class PolychromaticField:
         self.extent_x = extent_x
         self.extent_y = extent_y
 
-        self.dx = self.extent_x/Nx
-        self.dy = self.extent_y/Ny
+        self.dx = extent_x/Nx
+        self.dy = extent_y/Ny
 
         self.x = self.dx*(bd.arange(Nx)-Nx//2)
         self.y = self.dy*(bd.arange(Ny)-Ny//2)
@@ -145,32 +151,35 @@ class PolychromaticField:
         self.steps_args += [[z, scale_factor]]
 
 
-    def get_colors_at_image_plane(self, pupil, zi, z0, scale_factor = 1):
-        from scipy.interpolate import interp2d
+    def get_colors_at_image_plane(self, pupil, M, zi, z0, scale_factor = 1):
         """
-        zi: distance from the image plane to the lens
-        z0: distance from the lens the current position
-        zi and z0 should satisfy the equation 1/zi + 1/z0 = 1/f 
-        where f is the focal distance of the lens
-        pupil: diffractive optical element used as pupil
-        """
-        self.z += zi + z0
+        Assuming an optical system with linear response and assuming the system is only diffraction-limited by
+        the exit pupil of the system, compute the field at its image plane
 
-
-        if bd != np:
-            self.E = self.E.get()
-
-        #magnification factor
-        M = zi/z0
-        fun = interp2d(
-                    self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx,
-                    self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny,
-                    self.E,
-                    kind="cubic",)
         
-        self.E = fun(self.extent_x*(np.arange(self.Nx)-self.Nx//2)/self.Nx/M, 
-                   self.extent_y*(np.arange(self.Ny)-self.Ny//2)/self.Ny/M )/M
-        self.E = bd.array(np.flip(self.E))
+        Parameters
+        ----------
+
+        pupil: diffractive optical element used as exit pupil. Can be circular aperture, a diaphragm etc
+
+        zi: distance from the image plane to the objective lens
+        z0: distance from the objective lens to the current simulation plane
+
+        M: magnification factor of the optical system
+        (If the optical system is a single lens, magnification = - zi/z0)
+
+        Reference:
+        Introduction to Fourier Optics J. Goodman, Frequency Analysis of Optical Imaging Systems
+        
+        """
+
+        # if the magnification is negative, the image is inverted
+        if M < 0:
+            self.E = bd.flip(self.E)
+        M_abs = bd.abs(M)
+
+        self.E = self.E/M_abs
+
 
         for j in range(len(self.optical_elements)):
             self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
@@ -178,8 +187,8 @@ class PolychromaticField:
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
 
-        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))
-        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))
+        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))/M_abs
+        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))/M_abs
         fxx, fyy = bd.meshgrid(fx, fy)
 
         bar = progressbar.ProgressBar()
@@ -204,6 +213,13 @@ class PolychromaticField:
 
         if bd != np:
             bd.cuda.Stream.null.synchronize()
+
+        self.xx = M_abs * self.xx
+        self.yy = M_abs * self.yy
+        self.x = M_abs * self.x
+        self.y = M_abs * self.y
+        self.dx = M_abs * self.dx
+        self.dy = M_abs * self.dy
 
 
         rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)

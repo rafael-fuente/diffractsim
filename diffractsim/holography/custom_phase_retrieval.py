@@ -9,6 +9,13 @@ from PIL import Image
 from ..util.constants import *
 import progressbar
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
 class CustomPhaseRetrieval():
     def __init__(self, wavelength, extent_x, extent_y, Nx, Ny):
         "class for retrieve the phase mask required to reconstruct an image (specified at target amplitude path) at an arbitrary diffraction plane"
@@ -70,13 +77,13 @@ class CustomPhaseRetrieval():
             for example, the following functions can be used for reconstructing an image at the Fourier plane
 
             def propagate_function(F):
-                F.add_lens(f = 80*cm)
+                F.add(Lens(f = 80*cm))
                 F.propagate(80*cm)
 
 
             def inverse_function(F):
                 F.propagate(-80*cm)
-                F.add_lens(f = -80*cm)
+                F.add(Lens(f = -80*cm))
         """
 
         self.propagate_function = propagate_function

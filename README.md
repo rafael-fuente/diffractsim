@@ -3,7 +3,7 @@
 [![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1)
 
 
-Flexible, and easy-to-use Python diffraction simulator that focuses on visualizing physical optics phenomena. The simulator uses mainly scalar diffraction techniques for light propagation, provides an interface for simulation set up, and includes several plotting options, counting with CIE Color matching functions for simple but accurate color reproduction.
+Flexible, and easy-to-use Python diffraction simulator that focuses on visualizing physical optics phenomena. The simulator uses mainly scalar diffraction techniques for light propagation, provides a nice interface for simulation set up, and includes several plotting options, counting with CIE Color matching functions for accurate color reproduction.
 
 The basic use of this simulator using the angular spectrum method is described in this [article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html). Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1) to see the animated simulations!
 
@@ -80,7 +80,7 @@ python diffraction_text.py
 
 [![N|Solid](/images/text.png)](/examples/text.py)
 
-For a more detailed discussion about simulating diffraction patterns using lenses, take a look at [these examples](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
+The examples from the video about diffraction with lenses can be found [here](https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method/blob/main/Simulations%20with%20lenses.md).
 
 GPU acceleration requires having [CuPy](https://docs.cupy.dev/en/stable/install.html) installed and [CUDA](https://developer.nvidia.com/cuda-downloads) in your computer. 
 To use GPU acceleration in your simulations, after import `diffractsim` add the line:

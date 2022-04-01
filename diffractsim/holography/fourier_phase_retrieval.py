@@ -1,10 +1,19 @@
 import numpy as np
 from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
 from ..util.image_handling import resize_array
+from ..util.bluestein_FFT import bluestein_fft2, bluestein_ifft2, bluestein_fftfreq
 
 from ..util.backend_functions import backend as bd
+import progressbar
 
 """
+
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+
 Reference for the phase retrieval algorithms: 
 J. R. Fienup, "Phase retrieval algorithms: a comparison," Appl. Opt. 21, 2758-2769 (1982)
 https://www.osapublishing.org/ao/fulltext.cfm?uri=ao-21-15-2758&id=26002
@@ -22,7 +31,7 @@ class FourierPhaseRetrieval():
         self.target_amplitude = np.array(load_graymap_image_as_array(target_amplitude_path, new_size = new_size))
         
         if pad != None:
-            self.target_amplitude = np.pad(self.target_amplitude, ((pad, pad), (pad, pad)), "constant")
+            self.target_amplitude = np.pad(self.target_amplitude, ((pad[1], pad[1]), (pad[0], pad[0])), "constant")
 
         self.Nx = self.target_amplitude.shape[1]
         self.Ny = self.target_amplitude.shape[0]
@@ -36,10 +45,13 @@ class FourierPhaseRetrieval():
         self.retrieved_phase = None
 
 
-    def retrieve_phase_mask(self, max_iter = 200, method = 'Conjugate-Gradient', CG_step = 1.):
+    def retrieve_phase_mask(self, max_iter = 200, method = 'Conjugate-Gradient', CG_step = 1., bluestein_zoom = 1):
         
         implemented_methods = ('Gerchberg-Saxton', 'Conjugate-Gradient')
 
+
+
+        bar = progressbar.ProgressBar()
         if method == 'Gerchberg-Saxton':
 
 
@@ -52,7 +64,7 @@ class FourierPhaseRetrieval():
             source_amplitude  = bd.abs(bd.fft.ifftshift(source_amplitude))
             g_p = bd.fft.ifft2(bd.fft.ifftshift(target_amplitude))
 
-            for iter in range(max_iter):
+            for iter in bar(range(max_iter)):
                 g = source_amplitude * bd.exp(1j * bd.angle(g_p))
                 G = bd.fft.fft2(g)
                 G_p = target_amplitude * bd.exp(1j * bd.angle(G))
@@ -83,11 +95,13 @@ class FourierPhaseRetrieval():
             g = bd.abs(source_amplitude) * bd.exp(1j * bd.angle(g_pp))
             gp_last_iter = g
 
-            for iter in range(max_iter):
+
+            bar = progressbar.ProgressBar()
+            for iter in bar(range(max_iter)):
                 
                 G = bd.fft.fft2(g)
                 G_p = target_amplitude * bd.exp(1j * bd.angle(G))
-                g_p = bd.fft.ifft2(G_p)
+                g_p = bd.fft.ifft2(G_p )
                 
                 # compute the squared error to test the performance
                 # diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
@@ -128,13 +142,13 @@ class FourierPhaseRetrieval():
 
 
         
-    def save_retrieved_phase_as_image(self, name):
+    def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
 
 
         if bd == np:
-            save_phase_mask_as_image(name, self.retrieved_phase)
+            save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
         else:
-            save_phase_mask_as_image(name, self.retrieved_phase.get())
+            save_phase_mask_as_image(name, self.retrieved_phase.get(), phase_mask_format = phase_mask_format)
 
             
 

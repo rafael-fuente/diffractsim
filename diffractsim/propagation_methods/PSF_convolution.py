@@ -1,6 +1,13 @@
 from ..util.backend_functions import backend as bd
 from ..util.scaled_FT import scaled_fourier_transform
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
 def PSF_convolution(simulation, E, λ, PSF, scale_factor = 1):
     """
     Convolve the field with a the given coherent point spread function (PSF) sampled in spatial simulation coordinates.

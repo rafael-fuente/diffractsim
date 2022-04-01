@@ -1,6 +1,13 @@
 import numpy as np
 from ..util.backend_functions import backend as bd
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2021, Rafael de la Fuente
+All rights reserved.
+"""
+
 def two_steps_fresnel_method(simulation, E, z, λ, scale_factor):
     """
     Compute the field in distance equal to z with the two step Fresnel propagator, rescaling the field in the new coordinates
@@ -11,7 +18,7 @@ def two_steps_fresnel_method(simulation, E, z, λ, scale_factor):
     Note that unlike within in the propagate method, Fresnel approximation is used here.
     Reference: VOELZ, D. G. (2011). Computational Fourier optics. Bellingham, Wash, SPIE.
 
-    To arbitrarily choose and zoom in a region of interest, use zoom_propagate method instead.
+    To arbitrarily choose and zoom in a region of interest, use bluestein method method instead.
     """
     global bd
     from ..util.backend_functions import backend as bd

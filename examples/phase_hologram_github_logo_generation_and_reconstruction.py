@@ -5,7 +5,7 @@ from diffractsim import MonochromaticField, ApertureFromImage, Lens, mm, nm, cm,
 
 
 # Generate a Fourier plane phase hologram
-PR = FourierPhaseRetrieval(target_amplitude_path = './apertures/github_logo.png', new_size= (400,400), pad = 200)
+PR = FourierPhaseRetrieval(target_amplitude_path = './apertures/github_logo.png', new_size= (400,400), pad = (200,200))
 PR.retrieve_phase_mask(max_iter = 200, method = 'Conjugate-Gradient')
 PR.save_retrieved_phase_as_image('github_logo_phase_hologram.png')
 

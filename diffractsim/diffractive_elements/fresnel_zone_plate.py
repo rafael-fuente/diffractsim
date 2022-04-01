@@ -50,6 +50,6 @@ class FZP(DOE):
 
         r_2 = xx**2 + yy**2
 
-        phase_shift = -(2*bd.pi/λ * (bd.sqrt(f**2 + r_2) - f))
+        phase_shift = -(2*bd.pi/λ * (bd.sqrt(self.f**2 + r_2) - self.f))
         t = t*bd.exp(1j*phase_shift)
         return t

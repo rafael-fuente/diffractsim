@@ -5,6 +5,13 @@ from .util.backend_functions import backend as bd
 
 illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
 
+"""
+BSD 3-Clause License
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
 class ColourSystem:
     def __init__(self, spectrum_size = 400, spec_divisions = 40, clip_method = 1):
         global bd
