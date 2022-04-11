@@ -5,7 +5,7 @@ from ..util.constants import *
 
 def plot_intensity(self, I, square_root = False, figsize=(7, 6), 
                   xlim=None, ylim=None, grid = False, text = None, units = mm,
-                  slice_y_pos = None):
+                  slice_y_pos = None, slice_x_pos = None):
     """visualize the diffraction pattern intesity with matplotlib"""
     
     from ..util.backend_functions import backend as bd
@@ -13,7 +13,6 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
 
     if square_root == False:
         if bd != np:
-            print("hola")
             I = I.get()
         else:
             I = I
@@ -27,7 +26,7 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
 
     fig = plt.figure(figsize=figsize)
 
-    if slice_y_pos == None:
+    if (slice_y_pos == None) and (slice_x_pos == None):
         ax = fig.add_subplot(1, 1, 1)
     else:
         ax = fig.add_subplot(1, 2, 1)
@@ -98,7 +97,14 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
         ax_slice.set_title("X slice")
         #plt.subplots_adjust(right=2)
 
-        ax_slice.plot(self.y/units, I[np.argmin(abs(self.y-slice_y_pos)),:]**2)
+        if bd != np:
+            x = self.x.get()
+            y = self.y.get()
+        else:
+            x = self.x
+            y = self.y
+
+        ax_slice.plot(x/units, I[np.argmin(abs(y-slice_y_pos)),:]**2)
         ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
 
         if grid == True:
@@ -117,5 +123,42 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
             ax_slice.set_xlabel("[nm]")
         elif units == m:
             ax_slice.set_xlabel("[m]")
+
+    if slice_x_pos != None:
+        ax_slice = fig.add_subplot(1, 2, 2)
+        plt.subplots_adjust(wspace=0.3)
+        ax_slice.set_title("Y slice")
+        #plt.subplots_adjust(right=2)
+
+        if bd != np:
+            x = self.x.get()
+            y = self.y.get()
+        else:
+            x = self.x
+            y = self.y
+
+        ax_slice.plot(y/units, I[:, np.argmin(abs(x-slice_x_pos))]**2)
+        ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
+
+        if grid == True:
+            ax_slice.grid(alpha =0.2)
+
+        if xlim != None:
+            ax_slice.set_xlim(np.array(ylim)/units)
+
+        if units == mm:
+            ax_slice.set_xlabel("[mm]")
+        elif units == um:
+            ax_slice.set_xlabel("[um]")
+        elif units == cm:
+            ax_slice.set_xlabel("[cm]")
+        elif units == nm:
+            ax_slice.set_xlabel("[nm]")
+        elif units == m:
+            ax_slice.set_xlabel("[m]")
+
+
+
+
 
     plt.show()

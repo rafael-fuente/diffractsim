@@ -3,22 +3,28 @@ from ..util.backend_functions import backend as bd
 
 from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
 from ..util.image_handling import rescale_img_to_custom_coordinates
-from ..monochromatic_simulator import MonochromaticField
 from pathlib import Path
 from PIL import Image
 from ..util.constants import *
 import progressbar
 
 """
+
 BSD 3-Clause License
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
+
 """
 
+
+# Note: CustomPhaseRetrieval requires Autograd, which is not installed by default with diffractsim.
+
+# implemented custom phase retrieval methods: ('Conjugate-Gradient', 'Stochastic-Gradient-Descent', 'Adam-Optimizer')
+
 class CustomPhaseRetrieval():
-    def __init__(self, wavelength, extent_x, extent_y, Nx, Ny):
-        "class for retrieve the phase mask required to reconstruct an image (specified at target amplitude path) at an arbitrary diffraction plane"
+    def __init__(self, wavelength, z, extent_x, extent_y, Nx, Ny):
+        "class for retrieve the phase mask required to reconstruct an image (specified at target amplitude path) at a distance z"
 
         global bd
         from ..util.backend_functions import backend as bd
@@ -26,7 +32,7 @@ class CustomPhaseRetrieval():
 
         self.extent_x = extent_x
         self.extent_y = extent_y
-
+        self.z = z
         self.dx = self.extent_x/Nx
         self.dy = self.extent_y/Ny
 
@@ -36,8 +42,7 @@ class CustomPhaseRetrieval():
 
         self.Nx = Nx
         self.Ny = Ny
-        self.E = bd.ones((self.Ny, self.Nx))
-        self.wavelength = wavelength
+        self.λ = wavelength
 
 
 
@@ -54,6 +59,7 @@ class CustomPhaseRetrieval():
         t = bd.array(np.flip(t, axis = 0))
 
         self.source_amplitude = t
+        self.source_size = image_size
 
 
 
@@ -71,60 +77,152 @@ class CustomPhaseRetrieval():
 
         self.target_amplitude = t
 
-    def set_field_propagate_function(self, propagate_function, inverse_function):
 
-        """
-            for example, the following functions can be used for reconstructing an image at the Fourier plane
+    def retrieve_phase_mask(self,  max_iter = 20, method = 'Adam-Optimizer', propagation_method = 'Angular-Spectrum', learning_rate = 1.0):
 
-            def propagate_function(F):
-                F.add(Lens(f = 80*cm))
-                F.propagate(80*cm)
+        implemented_phase_retrieval_methods = ('Conjugate-Gradient', 'Stochastic-Gradient-Descent', 'Adam-Optimizer')
+        implemented_propagation_methods = ('Angular-Spectrum', 'Fresnel')
+
+        import autograd.numpy as npa 
+        from autograd import elementwise_grad as egrad  
 
 
-            def inverse_function(F):
-                F.propagate(-80*cm)
-                F.add(Lens(f = -80*cm))
-        """
+        if propagation_method == 'Angular-Spectrum':
 
-        self.propagate_function = propagate_function
-        self.inverse_function = inverse_function
+            fx = npa.fft.fftshift(npa.fft.fftfreq(self.Nx, d = self.dx))
+            fy = npa.fft.fftshift(npa.fft.fftfreq(self.Ny, d = self.dy))
+            fxx, fyy = np.meshgrid(fx, fy)
 
-    def retrieve_phase_mask(self, max_iter = 200, method = 'Gerchberg-Saxton'):
-        
-        implemented_methods = ('Gerchberg-Saxton')
 
-        if method == 'Gerchberg-Saxton':
+            def objective_function(phase):
 
-            F = MonochromaticField(
-                wavelength=self.wavelength, extent_x=self.extent_x, extent_y=self.extent_y, Nx=self.Nx, Ny=self.Ny
-            )
+                phase = phase.reshape(self.Ny, self.Nx)                
+                c = npa.fft.fftshift(npa.fft.fft2(self.source_amplitude*npa.exp(1j*phase)))
+                argument = (2 * npa.pi)**2 * ((1. / self.λ) ** 2 - fxx ** 2 - fyy ** 2)
 
-            # Gerchberg Saxton iteration
-            F.E = bd.fft.ifft2(bd.fft.ifftshift(self.target_amplitude))
+                #Calculate the propagating and the evanescent (complex) modes
+                tmp = npa.sqrt(npa.abs(argument))
+                kz = npa.where(argument >= 0, tmp, 1j*tmp)
+                E = npa.abs(npa.fft.ifft2(npa.fft.ifftshift(c * npa.exp(1j * kz * self.z))))
+                #print(npa.sum((self.target_amplitude/npa.sum(self.target_amplitude) - (E)/npa.sum(E))**2))
+
+                return npa.sum((self.target_amplitude - E)**2)
+
+            self.grad_F = egrad(objective_function)
+
+        elif propagation_method == 'Fresnel':
+
+            def objective_function(phase):
+
+                phase = phase.reshape(self.Ny, self.Nx)
+                E = npa.abs(npa.fft.fftshift( npa.fft.fft2( self.source_amplitude*npa.exp(1j * 2*np.pi/self.λ /(2*self.z) *(self.xx**2 + self.yy**2))*  npa.exp(1j*phase))))
+                #print(npa.sum((self.target_amplitude/npa.sum(self.target_amplitude) - (E)/npa.sum(E))**2))
+                return npa.sum((self.target_amplitude - E)**2)
+
+            self.grad_F = egrad(objective_function)
+        else:
+            raise NotImplementedError(
+                f"{method} has not been implemented. Use one of {implemented_propagation_methods}")
+
+
+        if method == 'Conjugate-Gradient':
+
+            """
+            Nonlinear conjugate gradient algorithm by Polak and Ribiere
+
+            Reference: 
+            Nocedal, J, and S J Wright. 2006. Numerical Optimization. Springer New York.
+            https://docs.scipy.org/doc/scipy/reference/optimize.minimize-cg.html#optimize-minimize-cg
+            """
+
+            import scipy
+            from scipy.optimize import minimize
+
+
+            intial_phase = np.array(np.angle(np.fft.ifft2(np.fft.ifftshift(self.target_amplitude))))
+            result  = scipy.optimize.minimize(objective_function, intial_phase, method='CG', jac=self.grad_F, tol = 1e-8, options={'maxiter': max_iter})
+            retrieved_phase = result.x.reshape(self.Ny, self.Nx)
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
+            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
+
+        elif method == 'Stochastic-Gradient-Descent':
+
+            """
+            Stochastic gradient descent with momentum.
+            Adapted from ``autograd/misc/optimizers.py``.
+            """
+
+            mass=0.9
+
+            from scipy.optimize import OptimizeResult
+
+            intial_phase = np.array(np.angle(np.fft.ifft2(np.fft.ifftshift(self.target_amplitude))))
+
+            x = intial_phase
+            velocity = np.zeros_like(x)
 
             bar = progressbar.ProgressBar()
-            for iter in bar(range(max_iter)):
+            for i in bar(range(max_iter)):
+                g = self.grad_F(x)
 
-                F.E = bd.abs(self.source_amplitude) * bd.exp(1j * bd.angle(F.E))
-                self.propagate_function(F)
-                F.E = bd.abs(self.target_amplitude) * bd.exp(1j * bd.angle(F.E))
-                self.inverse_function(F)
+                velocity = mass * velocity - (1.0 - mass) * g
+                x = x + learning_rate * velocity
 
-            self.retrieved_phase = bd.angle(F.E)
+            i += 1
+            result = OptimizeResult(x=x, fun=objective_function(x), jac=g, nit=i, nfev=i, success=True)
+            retrieved_phase = result.x.reshape(self.Ny, self.Nx)
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
+            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
 
+        elif method == 'Adam-Optimizer':
 
+            """
+            Reference: 
+            Adam: A Method for Stochastic Optimization
+            http://arxiv.org/pdf/1412.6980.pdf.
+            """
+
+            beta1=0.9
+            beta2=0.999
+            eps=1e-8
+
+            from scipy.optimize import OptimizeResult
+
+            intial_phase = np.array(np.angle(np.fft.ifft2(np.fft.ifftshift(self.target_amplitude))))
+
+            x = intial_phase
+            m = np.zeros_like(x)
+            v = np.zeros_like(x)
+
+            bar = progressbar.ProgressBar()
+            for i in bar(range(max_iter)):
+                g = self.grad_F(x)
+
+                m = (1 - beta1) * g + beta1 * m  # first  moment estimate.
+                v = (1 - beta2) * (g**2) + beta2 * v  # second moment estimate.
+                mhat = m / (1 - beta1**(i + 1))  # bias correction.
+                vhat = v / (1 - beta2**(i + 1))
+                x = x - learning_rate * mhat / (np.sqrt(vhat) + eps)
+
+            i += 1
+
+            result = OptimizeResult(x=x, fun=objective_function(x), jac=g, nit=i, nfev=i, success=True)
+            retrieved_phase = result.x.reshape(self.Ny, self.Nx)
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
+            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
 
         else:
             raise NotImplementedError(
-                f"{method} has not been implemented. Use one of {implemented_method}")
+                f"{method} has not been implemented. Use one of {implemented_phase_retrieval_methods}")
 
 
 
 
         
-    def save_retrieved_phase_as_image(self, name):
+    def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
+
 
         if bd == np:
-            save_phase_mask_as_image(name, self.retrieved_phase)
+            save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
         else:
-            save_phase_mask_as_image(name, self.retrieved_phase.get())
+            save_phase_mask_as_image(name, self.retrieved_phase.get(), phase_mask_format = phase_mask_format)

@@ -54,9 +54,6 @@ class MonochromaticField:
     def add(self, optical_element):
 
         self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
-    def fft(self):
-        
-        self.E = bd.fft.fftshift(bd.fft.fft2(self.E))
 
 
     def propagate(self, z):

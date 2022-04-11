@@ -22,8 +22,8 @@ F.add(ApertureFromImage(
      phase_mask_path= "github_logo_phase_hologram.png", image_size=(10.0 * mm, 10.0 * mm), simulation = F))
 
 # plot colors at z = 0
-rgb = F.get_colors()
-F.plot_colors(rgb)
+rgb = F.get_field()
+F.plot_phase(rgb)
 
 # propagate field to Fourier plane
 F.add(Lens(f = 80*cm))

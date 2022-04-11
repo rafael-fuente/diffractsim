@@ -9,7 +9,7 @@ radius = 6*mm
 NA = radius  / z0  #numerical aperture
 
 #print diffraction limit
-print('\n Maximum object resolvable distance by Rayleigh criteria: {} mm'.format("%.3f"  % (0.61*550*nm/NA /mm)))
+print('\n Maximum object resolvable distance by Rayleigh criteria: {} mm'.format("%.3f"  % (0.61*488*nm/NA /mm)))
 
 
 F = MonochromaticField(

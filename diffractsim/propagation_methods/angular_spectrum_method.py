@@ -52,8 +52,10 @@ def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
         simulation.dx = simulation.dx*scale_factor
         simulation.dy = simulation.dy*scale_factor
 
-
         extent_fx = (fx[1]-fx[0])*simulation.Nx
         simulation.xx, simulation.yy, E = scaled_fourier_transform(fxx, fyy, factor*c * bd.exp(1j * kz * z),  λ = -1, scale_factor = simulation.extent_x/extent_fx * scale_factor, mesh = True)
+        simulation.extent_x = simulation.extent_x*scale_factor
+        simulation.extent_y = simulation.extent_y*scale_factor
+
     return E
 

@@ -20,8 +20,8 @@ class RectangularSlit(DOE):
 
     def get_transmittance(self, xx, yy, λ):
 
-        t = bd.where((((xx > (self.x0 - self.width / 2)) & (xx < (self.x0 + self.width / 2)))
-                        & ((yy > (self.y0 - self.height / 2)) & (yy < (self.y0 + self.height / 2)))),
+        t = bd.where((((xx >= (self.x0 - self.width / 2)) & (xx < (self.x0 + self.width / 2)))
+                        & ((yy >= (self.y0 - self.height / 2)) & (yy < (self.y0 + self.height / 2)))),
                         bd.ones_like(xx), bd.zeros_like(xx))
 
         return t

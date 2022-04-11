@@ -44,6 +44,8 @@ def PSF_convolution(simulation, E, λ, PSF, scale_factor = 1):
         simulation.y = simulation.y*scale_factor
         simulation.dx = simulation.dx*scale_factor
         simulation.dy = simulation.dy*scale_factor
+        simulation.extent_x = simulation.extent_x*scale_factor
+        simulation.extent_y = simulation.extent_y*scale_factor
         return E
 
 
@@ -80,4 +82,6 @@ def apply_transfer_function(simulation, E, λ, H, scale_factor = 1):
         simulation.y = simulation.y*scale_factor
         simulation.dx = simulation.dx*scale_factor
         simulation.dy = simulation.dy*scale_factor
+        simulation.extent_x = simulation.extent_x*scale_factor
+        simulation.extent_y = simulation.extent_y*scale_factor
         return E

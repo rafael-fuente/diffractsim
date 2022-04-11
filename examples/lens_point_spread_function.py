@@ -21,4 +21,4 @@ F.add(Lens(f=focal_distance, radius = Nx * dx/2))
 F.propagate(focal_distance)
 
 I = F.get_intensity()
-F.plot_intensity(I, square_root = True, xlim = [-30*um, 30*um], units = um, grid = True, figsize = (14,5), slice_y_pos = 0*um)
+F.plot_intensity(I, square_root = True, xlim = [-30*um, 30*um] , ylim = [-30*um, 30*um],  units = um, grid = True, figsize = (14,5), slice_y_pos = 0*um)
