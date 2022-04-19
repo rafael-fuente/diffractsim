@@ -5,6 +5,15 @@ from .complex_to_rgba import complex_to_rgba
 from ..util.constants import *
 
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None, max_val = 0.5, units = mm):
     """visualize the diffraction pattern phase with matplotlib"""
     

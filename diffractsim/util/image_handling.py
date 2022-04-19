@@ -1,12 +1,16 @@
 from PIL import Image
 import numpy as np
 
+
 """
-BSD 3-Clause License
+
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
+
 """
+
 
 def rescale_img_to_custom_coordinates(img, image_size, extent_x,extent_y, Nx, Ny):
 

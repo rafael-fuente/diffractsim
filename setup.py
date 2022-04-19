@@ -12,7 +12,7 @@ Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLY
 
 setup(
     name='diffractsim',
-    version='2.2.1',
+    version='2.2.2',
     description='A diffraction simulator for exploring and visualizing physical optics',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -23,7 +23,7 @@ setup(
     author_email='rafael.fuente.herrezuelo@gmail.com',
     license='BSD-3-Clause',
     packages=find_packages(),
-    install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar'],
+    install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar', 'autograd'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
 

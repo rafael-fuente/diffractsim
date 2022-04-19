@@ -10,7 +10,7 @@ from .util.backend_functions import backend as bd
 
 
 """
-BSD 3-Clause License
+MPL 2.0 Clause License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
@@ -141,7 +141,6 @@ class MonochromaticField:
 
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
-
         fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))/M_abs
         fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))/M_abs
         fxx, fyy = bd.meshgrid(fx, fy)
@@ -156,6 +155,53 @@ class MonochromaticField:
         self.y = M_abs * self.y
         self.dx = M_abs * self.dx
         self.dy = M_abs * self.dy
+
+
+
+    def propagate_to_lens_focal_plane(self, focal_length, x_interval, y_interval):
+        """
+        
+        Assuming Fresnel approximation, add a lens with focal_length and compute the field in distance equal to focal_length. 
+        The output plane can be arbitrarily chosen by using the arguments x_interval and y_interval
+
+        Parameters
+        ----------
+
+        focal_length: focal_length of the lens
+        x_interval: A length-2 sequence [x1, x2] giving the x outplut plane range
+        y_interval: A length-2 sequence [y1, y2] giving the y outplut plane range
+        
+        """
+
+        global bd
+        from .util.backend_functions import backend as bd
+        from .util.bluestein_FFT import bluestein_fft2, bluestein_fftfreq
+
+        
+        C = bluestein_fft2(self.E, x_interval[0] / (focal_length*self.λ), x_interval[1] / (focal_length*self.λ), 1/self.dx, 
+                            y_interval[0] / (focal_length*self.λ), y_interval[1] / (focal_length*self.λ), 1/self.dy)
+        dfx = 1/(self.Nx*self.dx)
+        dfy = 1/(self.Ny*self.dy)
+
+        fx_zfft = bluestein_fftfreq(x_interval[0]/ (focal_length*self.λ),x_interval[1]/ (focal_length*self.λ), self.Nx)
+        fy_zfft = bluestein_fftfreq(y_interval[0]/ (focal_length*self.λ),y_interval[1]/ (focal_length*self.λ), self.Ny)
+        dfx_zfft = fx_zfft[1]-fx_zfft[0]
+        dfy_zfft = fy_zfft[1]-fy_zfft[0]
+        nn, mm = bd.meshgrid((bd.linspace(0,(self.Nx-1),self.Nx)*dfx_zfft/dfx ), (bd.linspace(0,(self.Ny-1),self.Ny)*dfy_zfft/dfy ))
+        ft_factor = (self.dx*self.dy* bd.exp(bd.pi*1j * (nn + mm)))
+
+        self.x = fx_zfft*(focal_length*self.λ)
+        self.y = fy_zfft*(focal_length*self.λ)
+        self.xx, self.yy = bd.meshgrid(self.x, self.y)
+        self.dx = self.x[1] - self.x[0]
+        self.dy = self.y[1] - self.y[0]
+        self.extent_x = self.x[1] - self.x[0] + self.dx
+        self.extent_y = self.y[1] - self.y[0] + self.dy
+        
+        F.E = C*ft_factor * bd.exp(1j*bd.pi/(F.λ*focal_length)  * (F.xx**2 + F.yy**2)  +   1j*2*bd.pi/F.λ * focal_length ) / (1j*focal_length*F.λ)
+        F.z += focal_length
+
+
 
     def get_colors(self):
         """compute RGB colors of the cross-section profile at the current distance"""
@@ -222,6 +268,8 @@ class MonochromaticField:
         self.x = self.dx*(bd.arange(Nx)-Nx//2)
         self.y = self.dy*(bd.arange(Ny)-Ny//2)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
+
+
 
 
     def get_longitudinal_profile(self, start_distance, end_distance, steps):

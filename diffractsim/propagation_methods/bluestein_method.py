@@ -2,7 +2,7 @@ from ..util.backend_functions import backend as bd
 from ..util.bluestein_FFT import bluestein_fft2, bluestein_fftfreq
 
 """
-BSD 3-Clause License
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

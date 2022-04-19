@@ -1,24 +1,23 @@
 from .backend_functions import backend as bd
 
+
 """
-BSD 3-Clause License
+
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+This license prohibits others from using the project to promote derived products without written consent. Redistributions, with or without
+modification, requires giving appropriate attribution to the author for the original work. Redistributions must:
 
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
+1. Keep the original copyright on the software
+2. Include full text of license inside the software
+3. You must put an attribution in all advertising materials
 
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+Under the terms of the MPL, it also allows the integration of MPL-licensed code into proprietary codebases, but only on condition those components remain accessible.
+It grants liberal copyright and patent licenses allowing for free use, modification, distribution of the work, but does not grant the licensee any rights to a contributor's trademarks.
 
-3. Neither the name of the copyright holder nor the names of its
-   contributors may be used to endorse or promote products derived from
-   this software without specific prior written permission.
 """
 
 def scaled_fourier_transform(x, y, U, λ = 1,z =1, scale_factor = 1, mesh = False):

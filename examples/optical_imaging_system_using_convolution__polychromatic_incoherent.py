@@ -4,7 +4,7 @@ import numpy as np
 from diffractsim import PolychromaticField, ApertureFromImage, cf, mm, cm
 
 """
-BSD 3-Clause License
+MPL 2.0 License
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

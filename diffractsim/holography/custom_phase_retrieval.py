@@ -10,15 +10,13 @@ import progressbar
 
 """
 
-BSD 3-Clause License
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 
 """
 
-
-# Note: CustomPhaseRetrieval requires Autograd, which is not installed by default with diffractsim.
 
 # implemented custom phase retrieval methods: ('Conjugate-Gradient', 'Stochastic-Gradient-Descent', 'Adam-Optimizer')
 

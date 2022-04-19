@@ -6,7 +6,7 @@ from .util.backend_functions import backend as bd
 illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
 
 """
-BSD 3-Clause License
+MPL 2.0 Clause License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

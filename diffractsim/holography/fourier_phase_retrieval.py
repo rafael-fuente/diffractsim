@@ -6,9 +6,10 @@ from ..util.bluestein_FFT import bluestein_fft2, bluestein_ifft2, bluestein_fftf
 from ..util.backend_functions import backend as bd
 import progressbar
 
+
 """
 
-BSD 3-Clause License
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

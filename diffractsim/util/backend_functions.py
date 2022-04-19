@@ -1,5 +1,14 @@
 import numpy
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 try:
     import cupy
     CUPY_CUDA_AVAILABLE = True

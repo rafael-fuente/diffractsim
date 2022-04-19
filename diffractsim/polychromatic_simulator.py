@@ -13,7 +13,7 @@ from .util.constants import *
 
 
 """
-BSD 3-Clause License
+MPL 2.0 Clause License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

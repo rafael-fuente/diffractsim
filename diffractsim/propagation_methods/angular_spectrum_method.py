@@ -3,7 +3,7 @@ from ..util.backend_functions import backend as bd
 from ..util.scaled_FT import scaled_fourier_transform
 
 """
-BSD 3-Clause License
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.

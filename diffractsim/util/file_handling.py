@@ -3,6 +3,15 @@ import numpy as np
 from pathlib import Path
 
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 def load_graymap_image_as_array(string, new_size = None):
 
     from PIL import Image

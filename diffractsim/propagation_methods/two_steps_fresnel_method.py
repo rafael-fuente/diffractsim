@@ -2,9 +2,9 @@ import numpy as np
 from ..util.backend_functions import backend as bd
 
 """
-BSD 3-Clause License
+MPL 2.0 License 
 
-Copyright (c) 2021, Rafael de la Fuente
+Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 """
 

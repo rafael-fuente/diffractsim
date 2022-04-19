@@ -3,6 +3,15 @@ import numpy as np
 from ..util.constants import *
 
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, start_distance, end_distance, xlim=None, ylim=None, units = mm):
     """visualize the diffraction pattern longitudinal profile colors with matplotlib"""
 
@@ -61,11 +70,15 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_dis
         else:
             I = np.sqrt(I)
 
+    fig = plt.figure(figsize=(16/9 *6,6)) 
+    ax = fig.add_subplot(1,1,1)  
+
+
     if xlim != None:
         ax.set_xlim(np.array(xlim)/cm)
 
     if ylim != None:
-        ax.set_ylim(np.array(ylim)/mm)
+        ax.set_ylim(np.array(ylim)/units)
 
     if units == mm:
         ax.set_ylabel("[mm]")
@@ -79,8 +92,7 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_dis
         ax.set_ylabel("[m]")
 
 
-    fig = plt.figure(figsize=(16/9 *6,6)) 
-    ax = fig.add_subplot(1,1,1)  
+
 
 
     
@@ -89,7 +101,7 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, start_dis
     if grid == True:
         ax.grid(alpha =0.2)
 
-    im = ax.imshow(I, cmap= 'inferno',  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / mm, float(self.x[-1]+ self.dx) / mm],  interpolation='spline36', aspect = 'auto')
+    im = ax.imshow(I, cmap= 'inferno',  extent = [start_distance/cm,  end_distance/cm, float(self.x[0]) / units, float(self.x[-1]+ self.dx) / units],  interpolation='spline36', aspect = 'auto')
     
     cb = fig.colorbar(im, orientation = 'vertical')
 

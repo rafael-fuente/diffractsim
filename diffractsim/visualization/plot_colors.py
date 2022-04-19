@@ -3,6 +3,15 @@ import numpy as np
 from ..util.constants import *
 
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, units = mm):
     """visualize the diffraction pattern colors with matplotlib"""
 

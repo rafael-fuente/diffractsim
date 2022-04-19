@@ -1,11 +1,14 @@
 from .backend_functions import backend as bd
 from .chirp_z_transform import chirpz
 
+
 """
-BSD 3-Clause License
+
+MPL 2.0 License 
 
 Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
+
 """
 
 

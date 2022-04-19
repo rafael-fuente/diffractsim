@@ -1,6 +1,15 @@
 from abc import ABC, abstractmethod
 from ..util.scaled_FT import scaled_fourier_transform
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 class DOE(ABC):
     @abstractmethod
     def __init__(self):

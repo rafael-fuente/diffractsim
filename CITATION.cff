@@ -7,4 +7,4 @@ authors:
 title: "diffractsim: A flexible python diffraction simulator"
 doi: 10.5281/zenodo.6147772
 url: https://github.com/rafael-fuente/diffractsim
-license: BSD 3-Clause
+license: Mozilla Public License 2.0

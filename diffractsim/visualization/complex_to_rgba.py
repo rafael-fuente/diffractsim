@@ -1,6 +1,15 @@
 from matplotlib.colors import hsv_to_rgb
 import numpy as np
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 def complex_to_rgba(Z: np.ndarray, max_val: float = 1.0) -> np.ndarray:
     r = np.abs(Z)
     arg = np.angle(Z)

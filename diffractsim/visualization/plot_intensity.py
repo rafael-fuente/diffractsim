@@ -2,6 +2,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ..util.constants import *
 
+"""
+
+MPL 2.0 License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+
+"""
+
 
 def plot_intensity(self, I, square_root = False, figsize=(7, 6), 
                   xlim=None, ylim=None, grid = False, text = None, units = mm,
