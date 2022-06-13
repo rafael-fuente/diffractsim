@@ -198,8 +198,8 @@ class MonochromaticField:
         self.extent_x = self.x[1] - self.x[0] + self.dx
         self.extent_y = self.y[1] - self.y[0] + self.dy
         
-        F.E = C*ft_factor * bd.exp(1j*bd.pi/(F.λ*focal_length)  * (F.xx**2 + F.yy**2)  +   1j*2*bd.pi/F.λ * focal_length ) / (1j*focal_length*F.λ)
-        F.z += focal_length
+        self.E = C*ft_factor * bd.exp(1j*bd.pi/(self.λ*focal_length)  * (self.xx**2 + self.yy**2)  +   1j*2*bd.pi/self.λ * focal_length ) / (1j*focal_length*self.λ)
+        self.z += focal_length
 
 
 
