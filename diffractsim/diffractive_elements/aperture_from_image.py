@@ -49,7 +49,8 @@ class ApertureFromImage(DOE):
             t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
             t = bd.array(np.flip(t, axis = 0))
 
-            t = t*(amplitude_mask_extent[1] - amplitude_mask_extent[0]) + amplitude_mask_extent[0]
+            if amplitude_mask_extent != [0,1]:
+                t = bd.where((bd.abs(simulation.xx) < image_size[0]/2)   &  (bd.abs(simulation.yy) < image_size[1]/2),   t*(amplitude_mask_extent[1] - amplitude_mask_extent[0]) + amplitude_mask_extent[0], bd.zeros(t.shape))
 
         if self.phase_mask_path != None:
             from matplotlib.colors import rgb_to_hsv
