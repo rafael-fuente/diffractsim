@@ -102,11 +102,25 @@ class CustomPhaseRetrieval():
                 tmp = npa.sqrt(npa.abs(argument))
                 kz = npa.where(argument >= 0, tmp, 1j*tmp)
                 E = npa.abs(npa.fft.ifft2(npa.fft.ifftshift(c * npa.exp(1j * kz * self.z))))
-                #print(npa.sum((self.target_amplitude/npa.sum(self.target_amplitude) - (E)/npa.sum(E))**2))
-
-                return npa.sum((self.target_amplitude - E)**2)
+                return npa.sum(((self.target_amplitude - E)**2))
 
             self.grad_F = egrad(objective_function)
+
+
+            def masked_objective_function(phase, mask):
+
+                phase = phase.reshape(self.Ny, self.Nx)                
+                c = npa.fft.fftshift(npa.fft.fft2(self.source_amplitude*npa.exp(1j*phase)))
+                argument = (2 * npa.pi)**2 * ((1. / self.λ) ** 2 - fxx ** 2 - fyy ** 2)
+
+                #Calculate the propagating and the evanescent (complex) modes
+                tmp = npa.sqrt(npa.abs(argument))
+                kz = npa.where(argument >= 0, tmp, 1j*tmp)
+                E = npa.abs(npa.fft.ifft2(npa.fft.ifftshift(c * npa.exp(1j * kz * self.z))))
+                f = (self.target_amplitude - E)[mask]
+                return npa.sum(f**2)
+
+            self.grad_F_masked = egrad(masked_objective_function)
 
         elif propagation_method == 'Fresnel':
 
@@ -118,6 +132,19 @@ class CustomPhaseRetrieval():
                 return npa.sum((self.target_amplitude - E)**2)
 
             self.grad_F = egrad(objective_function)
+
+            def masked_objective_function(phase, mask):
+
+                phase = phase.reshape(self.Ny, self.Nx)
+                E = npa.abs(npa.fft.fftshift( npa.fft.fft2( self.source_amplitude*npa.exp(1j * 2*np.pi/self.λ /(2*self.z) *(self.xx**2 + self.yy**2))*  npa.exp(1j*phase))))
+                f = (self.target_amplitude - E)[mask]
+                return npa.sum(f**2)
+
+            self.grad_F_masked = egrad(masked_objective_function)
+
+
+
+
         else:
             raise NotImplementedError(
                 f"{method} has not been implemented. Use one of {implemented_propagation_methods}")
@@ -146,8 +173,7 @@ class CustomPhaseRetrieval():
         elif method == 'Stochastic-Gradient-Descent':
 
             """
-            Stochastic gradient descent with momentum.
-            Adapted from ``autograd/misc/optimizers.py``.
+            Two batch stochastic gradient descent with momentum.
             """
 
             mass=0.9
@@ -161,10 +187,22 @@ class CustomPhaseRetrieval():
 
             bar = progressbar.ProgressBar()
             for i in bar(range(max_iter)):
-                g = self.grad_F(x)
+
+                mask = np.random.randint(0,2,x.shape, dtype = bool)
+
+                g = self.grad_F_masked(x,mask)
 
                 velocity = mass * velocity - (1.0 - mass) * g
                 x = x + learning_rate * velocity
+
+
+                g = self.grad_F_masked(x,~mask)
+
+                velocity = mass * velocity - (1.0 - mass) * g
+                x = x + learning_rate * velocity
+
+
+                #print(objective_function(x))
 
             i += 1
             result = OptimizeResult(x=x, fun=objective_function(x), jac=g, nit=i, nfev=i, success=True)
@@ -194,13 +232,17 @@ class CustomPhaseRetrieval():
 
             bar = progressbar.ProgressBar()
             for i in bar(range(max_iter)):
-                g = self.grad_F(x)
+                mask = np.random.randint(0,2,x.shape)
 
+                g = self.grad_F(x)
                 m = (1 - beta1) * g + beta1 * m  # first  moment estimate.
                 v = (1 - beta2) * (g**2) + beta2 * v  # second moment estimate.
                 mhat = m / (1 - beta1**(i + 1))  # bias correction.
                 vhat = v / (1 - beta2**(i + 1))
                 x = x - learning_rate * mhat / (np.sqrt(vhat) + eps)
+
+
+                #print(objective_function(x))
 
             i += 1
 

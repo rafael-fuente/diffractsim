@@ -1,7 +1,7 @@
 import diffractsim
 diffractsim.set_backend("CUDA")
 import numpy as np
-from diffractsim import PolychromaticField, ApertureFromImage, cf, mm, cm
+from diffractsim import PolychromaticField, ApertureFromImage, cf, mm, cm, CircularAperture
 
 """
 MPL 2.0 License
@@ -36,9 +36,14 @@ def get_colors_at_image_plane(F, radius, M,  zi, z0):
     Introduction to Fourier Optics J. Goodman, Frequency Analysis of Optical Imaging Systems
     
     """
-
+    pupil = CircularAperture(radius)
     F.z += zi + z0
 
+
+
+
+    for j in range(len(F.optical_elements)):
+        F.E = F.E * F.optical_elements[j].get_transmittance(F.xx, F.yy, 0)
 
     # if the magnification is negative, the image is inverted
     if M < 0:
@@ -46,11 +51,6 @@ def get_colors_at_image_plane(F, radius, M,  zi, z0):
     M_abs = bd.abs(M)
 
     F.E = F.E/M_abs
-
-
-    for j in range(len(F.optical_elements)):
-        F.E = F.E * F.optical_elements[j].get_transmittance(F.xx, F.yy, 0)
-
 
     Ip = F.E * bd.conjugate(F.E)
     
@@ -75,7 +75,9 @@ def get_colors_at_image_plane(F, radius, M,  zi, z0):
         #Definte the OTF function, representing the Fourier transform of the circular pupil function.
 
         fc = radius / (F.λ_list_samples[i]* nm  * zi) # coherent cutoff frequency
-        H = bd.where(fp < 2 * fc, 2/bd.pi * (bd.arccos(fp / (2*fc)) - fp / (2*fc) * bd.sqrt(1 - (fp / (2*fc))**2)) , bd.zeros_like(fp))
+
+        H = pupil.get_optical_transfer_function(fx, fy, zi, F.λ_list_samples[i]* nm )
+        #H = bd.where(fp < 2 * fc, 2/bd.pi * (bd.arccos(fp / (2*fc)) - fp / (2*fc) * bd.sqrt(1 - (fp / (2*fc))**2)) , bd.zeros_like(fp))
         Iλ = bd.abs(bd.fft.ifft2(bd.fft.ifftshift(c*H)))
 
         XYZ = F.cs.spec_partition_to_XYZ(bd.outer(Iλ, F.spec_partitions[i]),i)

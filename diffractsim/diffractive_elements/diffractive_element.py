@@ -62,14 +62,14 @@ class DOE(ABC):
         global bd
         from ..util.backend_functions import backend as bd
 
-        h = bd.fft.ifft2(bd.fft.ifftshift(self.get_amplitude_transfer_function(fyy, fyy, z, λ)))
+        h = bd.fft.ifft2(bd.fft.ifftshift(self.get_amplitude_transfer_function(fxx, fyy, z, λ)))
         H = bd.fft.fftshift(bd.fft.fft2(h*bd.conjugate(h))) 
 
         dfx = fxx[0,1]-fxx[0,0]
         dfy = fyy[1,0]-fyy[0,0]
 
         #normalize OTF
-        H = H/bd.sum(bd.abs(H)**2 *dfx*dfy)
+        H = H/bd.amax(bd.abs(H))
 
 
         return H

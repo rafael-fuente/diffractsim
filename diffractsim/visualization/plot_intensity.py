@@ -14,11 +14,14 @@ All rights reserved.
 
 def plot_intensity(self, I, square_root = False, figsize=(7, 6), 
                   xlim=None, ylim=None, grid = False, text = None, units = mm,
-                  slice_y_pos = None, slice_x_pos = None):
+                  slice_y_pos = None, slice_x_pos = None, dark_background = True):
     """visualize the diffraction pattern intesity with matplotlib"""
     
     from ..util.backend_functions import backend as bd
-    plt.style.use("dark_background")
+    if dark_background == True:
+        plt.style.use("dark_background")
+    else:
+        plt.style.use("default")
 
     if square_root == False:
         if bd != np:
@@ -80,11 +83,11 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
 
     im = ax.imshow(
         I, cmap= 'inferno',
-        extent=[
-            float(self.x[0]) / units,
-            float(self.x[-1] + self.dx) / units,
-            float(self.y[0] )/ units,
-            float(self.y[-1] + self.dy) / units,
+        extent=[  # the center of each pixel is exactly the point where the intensity is evaluated
+            float(self.x[0] - self.dx/2) / units,
+            float(self.x[-1] + self.dx/2) / units,
+            float(self.y[0] - self.dy/2)/ units,
+            float(self.y[-1] + self.dy/2) / units,
         ],
         interpolation="spline36", origin = "lower"
     )

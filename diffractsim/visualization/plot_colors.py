@@ -12,11 +12,14 @@ All rights reserved.
 
 """
 
-def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, units = mm):
+def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, units = mm, dark_background = True):
     """visualize the diffraction pattern colors with matplotlib"""
 
     from ..util.backend_functions import backend as bd
-    plt.style.use("dark_background")
+    if dark_background == True:
+        plt.style.use("dark_background")
+    else:
+        plt.style.use("default")
     if bd != np:
         rgb = rgb.get()
 
@@ -54,10 +57,10 @@ def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, un
     im = ax.imshow(
         (rgb),
         extent=[
-            float(self.x[0]) / units,
-            float(self.x[-1] + self.dx) / units,
-            float(self.y[0] )/ units,
-            float(self.y[-1] + self.dy) / units,
+            float(self.x[0] - self.dx/2) / units,
+            float(self.x[-1] + self.dx/2) / units,
+            float(self.y[0] - self.dy/2)/ units,
+            float(self.y[-1] + self.dy/2) / units,
         ],
         interpolation="spline36", origin = "lower"
     )

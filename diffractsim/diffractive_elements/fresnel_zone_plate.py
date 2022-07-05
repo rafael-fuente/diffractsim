@@ -23,7 +23,7 @@ class BinaryFZP(DOE):
 
         r_2 = xx**2 + yy**2
 
-        phase_shift =  bd.pi* (bd.sign(((2*bd.pi/self.FZP_λ * (bd.sqrt(f**2 + r_2) - f))) % (2*bd.pi)  -  bd.pi  ))/2.
+        phase_shift =  bd.pi* (bd.sign(((2*bd.pi/self.FZP_λ * (bd.sqrt(self.f**2 + r_2) - self.f))) % (2*bd.pi)  -  bd.pi  ))/2.
         t = t*bd.exp(1j*phase_shift)
         return t
 

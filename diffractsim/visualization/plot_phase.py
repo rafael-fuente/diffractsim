@@ -14,11 +14,14 @@ All rights reserved.
 
 """
 
-def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None, max_val = 0.5, units = mm):
+def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None, max_val = 0.5, units = mm, dark_background = True):
     """visualize the diffraction pattern phase with matplotlib"""
     
     from ..util.backend_functions import backend as bd
-    plt.style.use("dark_background")
+    if dark_background == True:
+        plt.style.use("dark_background")
+    else:
+        plt.style.use("default")
 
     if bd != np:
         E = E.get()
@@ -68,10 +71,10 @@ def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text
     im = ax.imshow(
         complex_to_rgba(E, max_val = max_val),
         extent=[
-            float(self.x[0]) / units,
-            float(self.x[-1] + self.dx) / units,
-            float(self.y[0] )/ units,
-            float(self.y[-1] + self.dy) / units,
+            float(self.x[0] - self.dx/2) / units,
+            float(self.x[-1] + self.dx/2) / units,
+            float(self.y[0] - self.dy/2)/ units,
+            float(self.y[-1] + self.dy/2) / units,
         ],
         interpolation="spline36", origin = "lower"
     )

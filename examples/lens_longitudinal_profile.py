@@ -12,6 +12,7 @@ F.add(ApertureFromImage("./apertures/QWT.png",  image_size =(15 * mm, 15 * mm), 
 F.add(Lens(f = 50*cm))
 
 
-longitudinal_profile_rgb, longitudinal_profile_E = F.get_longitudinal_profile( start_distance = 0*cm , end_distance = 100 *cm , steps = 80) 
+longitudinal_profile_rgb, longitudinal_profile_E, extent = F.get_longitudinal_profile( start_distance = 0*cm , end_distance = 100 *cm , steps = 80) 
 #plot colors
-F.plot_longitudinal_profile_colors(longitudinal_profile_rgb = longitudinal_profile_rgb, start_distance = 0*cm , end_distance = 100 *cm)
+F.plot_longitudinal_profile_colors(longitudinal_profile_rgb = longitudinal_profile_rgb, extent = extent)
+print(longitudinal_profile_rgb.shape)

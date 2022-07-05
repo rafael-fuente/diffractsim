@@ -1,6 +1,8 @@
 from .diffractive_element import DOE, DOE_mix
 from .rectangular_slit import RectangularSlit
 from .circular_aperture import CircularAperture
+from .hexagonal_aperture import HexagonalAperture
+
 from .lens import Lens
 from .fresnel_zone_plate import FZP, BinaryFZP
 from .axicon import Axicon

@@ -18,7 +18,7 @@ F.add(Axicon(period = 0.06*mm, radius = 5*mm))
 
 end_distance = 90 *cm
 steps = 80 
-longitudinal_profile_rgb, longitudinal_profile_E = F.get_longitudinal_profile( start_distance = 0*cm , end_distance = end_distance , steps = steps) 
+longitudinal_profile_rgb, longitudinal_profile_E, extent = F.get_longitudinal_profile( start_distance = 0*cm , end_distance = end_distance , steps = steps) 
 
 #measure the position of the intensity maximum
 longitudinal_profile_E = longitudinal_profile_E[:, 1024]
@@ -26,4 +26,4 @@ index = bd.argmax(bd.abs(longitudinal_profile_E))
 print('\n Effective focal distance of the axicon: {} cm'.format("%.1f"  % (index * end_distance / steps / cm)))
 
 #plot colors
-F.plot_longitudinal_profile_colors(longitudinal_profile_rgb = longitudinal_profile_rgb, start_distance = 0*cm , end_distance = 90*cm)
+F.plot_longitudinal_profile_colors(longitudinal_profile_rgb = longitudinal_profile_rgb, extent = extent)

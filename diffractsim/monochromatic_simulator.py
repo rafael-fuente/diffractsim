@@ -56,14 +56,14 @@ class MonochromaticField:
         self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
 
 
-    def propagate(self, z):
+    def propagate(self, z, scale_factor = 1):
         """
         Compute the field in distance equal to z with the angular spectrum method
         The ouplut plane coordinates is the same than the input.
         """
 
         self.z += z
-        self.E = angular_spectrum_method(self, self.E, z, self.λ)
+        self.E = angular_spectrum_method(self, self.E, z, self.λ, scale_factor = scale_factor)
 
 
     def scale_propagate(self, z, scale_factor):
@@ -157,7 +157,6 @@ class MonochromaticField:
         self.dy = M_abs * self.dy
 
 
-
     def propagate_to_lens_focal_plane(self, focal_length, x_interval, y_interval):
         """
         
@@ -198,9 +197,8 @@ class MonochromaticField:
         self.extent_x = self.x[1] - self.x[0] + self.dx
         self.extent_y = self.y[1] - self.y[0] + self.dy
         
-        F.E = C*ft_factor * bd.exp(1j*bd.pi/(F.λ*focal_length)  * (F.xx**2 + F.yy**2)  +   1j*2*bd.pi/F.λ * focal_length ) / (1j*focal_length*F.λ)
-        F.z += focal_length
-
+        self.E = C*ft_factor * bd.exp(1j*bd.pi/(self.λ*focal_length)  * (self.xx**2 + self.yy**2)  +   1j*2*bd.pi/self.λ * focal_length ) / (1j*focal_length*self.λ)
+        self.z += focal_length
 
 
     def get_colors(self):
@@ -272,7 +270,7 @@ class MonochromaticField:
 
 
 
-    def get_longitudinal_profile(self, start_distance, end_distance, steps):
+    def get_longitudinal_profile(self, start_distance, end_distance, steps, scale_factor = 1):
         """
         Propagates the field at n steps equally spaced between start_distance and end_distance, and returns
         the colors and the field over the xz plane
@@ -287,14 +285,31 @@ class MonochromaticField:
         z0 = self.z 
         t0 = time.time()
 
+
         bar = progressbar.ProgressBar()
         for i in bar(range(steps)):
-                 
-            self.propagate(z[i])
+
+            if scale_factor == 1:     
+                self.propagate(z[i])
+            else:
+                self.scale_propagate(z[i], scale_factor)
+
+                self.extent_x/=scale_factor
+                self.extent_y/=scale_factor
+
+                self.dx/=scale_factor
+                self.dy/=scale_factor
+                self.x/=scale_factor
+                self.y/=scale_factor
+
+                self.xx/=scale_factor
+                self.yy/=scale_factor
+
             rgb = self.get_colors()
             longitudinal_profile_rgb[i,:,:]  = rgb[self.Ny//2,:,:]
             longitudinal_profile_E[i,:] = self.E[self.Ny//2,:]
             self.E = np.copy(self.E0)
+
 
         # restore intial values
         self.z = z0
@@ -302,7 +317,8 @@ class MonochromaticField:
 
         print ("Took", time.time() - t0)
 
-        return longitudinal_profile_rgb, longitudinal_profile_E
+        extent = [self.x[0]*scale_factor, self.x[-1]*scale_factor, start_distance, end_distance]
+        return longitudinal_profile_rgb, longitudinal_profile_E, extent
 
     def __add__(self, Field):
         """
