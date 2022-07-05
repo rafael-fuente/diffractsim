@@ -173,16 +173,18 @@ class PolychromaticField:
         
         """
 
+
+
+        for j in range(len(self.optical_elements)):
+            self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
+
+
         # if the magnification is negative, the image is inverted
         if M < 0:
             self.E = bd.flip(self.E)
         M_abs = bd.abs(M)
 
         self.E = self.E/M_abs
-
-
-        for j in range(len(self.optical_elements)):
-            self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
 
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
