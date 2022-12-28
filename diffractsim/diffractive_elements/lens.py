@@ -19,7 +19,7 @@ class Lens(DOE):
 
         t = 1
         if self.aberration != None:
-            t = t*bd.exp(2*bd.pi * 1j *aberration(xx, yy))
+            t = t*bd.exp(2j * bd.pi / λ * self.aberration(xx, yy))
 
         if self.radius != None:
             t = bd.where((xx**2 + yy**2) < self.radius**2, t, bd.zeros_like(xx))
@@ -62,7 +62,7 @@ class Lens(DOE):
             t = bd.ones_like(xx)
 
             if self.aberration != None:
-                t = t*bd.exp(2*bd.pi * 1j *aberration(xx, yy))
+                t = t*bd.exp(2*bd.pi * 1j * self.aberration(xx, yy))
 
             if self.radius != None:
                 t = t*bd.where((xx**2 + yy**2) < self.radius**2, t, bd.zeros_like(xx))
