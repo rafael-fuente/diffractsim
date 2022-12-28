@@ -6,7 +6,13 @@ from ..util.scaled_FT import scaled_fourier_transform
 class Lens(DOE):
     def __init__(self,f, radius = None, aberration = None):
         """
-        Creates a thin lens with a focal length equal to f 
+        Creates a thin lens with a focal length equal to f. 
+
+        Radius is a physical circular boundary of the lens.
+
+        Aberration is a function of (x, y) which describes the optical
+        path depth aberration of the lens. This is applied along with
+        any focal length given by `f`.
         """
         global bd
         from ..util.backend_functions import backend as bd
