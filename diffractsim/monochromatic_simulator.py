@@ -29,30 +29,37 @@ class MonochromaticField:
         extent_y: height of the rectangular grid 
         Nx: horizontal dimension of the grid 
         Ny: vertical dimension of the grid 
-        intensity: intensity of the field
+        intensity: intensity of the field 
         """
         global bd
+        # Import backend functions
         from .util.backend_functions import backend as bd
         
         self.extent_x = extent_x
         self.extent_y = extent_y
 
+        # Calculate grid spacing in the x and y dimensions
         self.dx = extent_x/Nx
         self.dy = extent_y/Ny
 
+        # Generate grid coordinates
         self.x = self.dx*(bd.arange(Nx)-Nx//2)
         self.y = self.dy*(bd.arange(Ny)-Ny//2)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
 
         self.Nx = Nx
         self.Ny = Ny
+        # Initialize electric field with given intensity
         self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
         self.λ = wavelength
         self.z = 0
+        # Initialize color system object
         self.cs = cf.ColourSystem(clip_method = 0)
         
     def add(self, optical_element):
-
+        """
+        Modify the electric field of the MonochromaticField object by applying the transfer function of an optical element.
+        """
         self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
 
 
@@ -60,6 +67,11 @@ class MonochromaticField:
         """
         Compute the field in distance equal to z with the angular spectrum method
         The ouplut plane coordinates is the same than the input.
+        
+        Parameters
+        ----------
+        z: distance to propagate
+        scale_factor: factor by which to scale the electric field (defaults to 1, no scaling)
         """
 
         self.z += z
@@ -77,6 +89,13 @@ class MonochromaticField:
         
         Note that unlike within in the propagate method, Fresnel approximation is used here.
         To arbitrarily choose and zoom in a region of interest, use zoom_propagate method instead.
+        
+        The output plane has dimensions that are `scale_factor` times larger than the input.
+
+        Parameters
+        ----------
+        z: distance to propagate
+        scale_factor: factor by which to scale the output plane (must be greater than 1)
         """
         
         self.z += z
@@ -139,16 +158,21 @@ class MonochromaticField:
 
         self.E = self.E/M_abs
 
+        # Compute Fourier transform of electric field
         fft_c = bd.fft.fft2(self.E)
         c = bd.fft.fftshift(fft_c)
+        # Calculate frequency coordinates
         fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))/M_abs
         fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))/M_abs
         fxx, fyy = bd.meshgrid(fx, fy)
 
+        # Calculate the amplitude transfer function for the pupil
         H = pupil.get_amplitude_transfer_function(fxx, fyy, zi, self.λ)
 
+        # Apply the transfer function to the electric field
         self.E = apply_transfer_function(self, self.E, self.λ, H, scale_factor)
 
+        # Scale the grid coordinates by the magnification factor
         self.xx = M_abs * self.xx
         self.yy = M_abs * self.yy
         self.x = M_abs * self.x
@@ -176,28 +200,37 @@ class MonochromaticField:
         from .util.backend_functions import backend as bd
         from .util.bluestein_FFT import bluestein_fft2, bluestein_fftfreq
 
-        
+        # Compute the electric field at the lens focal plane using the Bluestein method
         C = bluestein_fft2(self.E, x_interval[0] / (focal_length*self.λ), x_interval[1] / (focal_length*self.λ), 1/self.dx, 
                             y_interval[0] / (focal_length*self.λ), y_interval[1] / (focal_length*self.λ), 1/self.dy)
+        # Calculate frequency coordinates of the current field
         dfx = 1/(self.Nx*self.dx)
         dfy = 1/(self.Ny*self.dy)
 
+        # Calculate frequency coordinates of the field at the lens focal plane
         fx_zfft = bluestein_fftfreq(x_interval[0]/ (focal_length*self.λ),x_interval[1]/ (focal_length*self.λ), self.Nx)
         fy_zfft = bluestein_fftfreq(y_interval[0]/ (focal_length*self.λ),y_interval[1]/ (focal_length*self.λ), self.Ny)
         dfx_zfft = fx_zfft[1]-fx_zfft[0]
         dfy_zfft = fy_zfft[1]-fy_zfft[0]
+        # Calculate indices for a coordinate transformation of the field at the lens focal plane
         nn, mm = bd.meshgrid((bd.linspace(0,(self.Nx-1),self.Nx)*dfx_zfft/dfx ), (bd.linspace(0,(self.Ny-1),self.Ny)*dfy_zfft/dfy ))
+        # Calculate the coordinate transformation factor
         ft_factor = (self.dx*self.dy* bd.exp(bd.pi*1j * (nn + mm)))
 
+        # Calculate the grid coordinates for the field at the lens focal plane
         self.x = fx_zfft*(focal_length*self.λ)
         self.y = fy_zfft*(focal_length*self.λ)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
+        # Calculate grid spacing for the field at the lens focal plane
         self.dx = self.x[1] - self.x[0]
         self.dy = self.y[1] - self.y[0]
+        # Calculate the extent of the grid for the field at the lens focal plane
         self.extent_x = self.x[1] - self.x[0] + self.dx
         self.extent_y = self.y[1] - self.y[0] + self.dy
         
+        # Calculate the electric field at the lens focal plane
         self.E = C*ft_factor * bd.exp(1j*bd.pi/(self.λ*focal_length)  * (self.xx**2 + self.yy**2)  +   1j*2*bd.pi/self.λ * focal_length ) / (1j*focal_length*self.λ)
+        # Update the distance of the field from the optical element it is propagating through
         self.z += focal_length
 
 
