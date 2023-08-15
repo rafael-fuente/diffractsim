@@ -1,4 +1,5 @@
 # Diffractsim: A diffraction simulator for exploring and visualizing physical optics
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6147772.svg)](https://doi.org/10.5281/zenodo.6147772)
 
 [![animation](/images/diffraction_animated.gif)](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1)
 
