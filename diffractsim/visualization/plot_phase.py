@@ -14,16 +14,17 @@ All rights reserved.
 
 """
 
-def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None, max_val = 0.5, units = mm, dark_background = True):
+def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text = None, max_val = 0.5, units = mm, dark_background = False):
     """visualize the diffraction pattern phase with matplotlib"""
     
     from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
     if dark_background == True:
         plt.style.use("dark_background")
     else:
         plt.style.use("default")
 
-    if bd != np:
+    if backend_name == 'cupy':
         E = E.get()
     else:
         E = E
@@ -67,6 +68,14 @@ def plot_phase(self, E, figsize=(7, 6), xlim=None, ylim=None, grid = False, text
 
     plt.subplots_adjust(right=0.8)
 
+    ax.imshow(np.zeros(E.shape), cmap = 'gray',
+        extent=[
+            float(self.x[0] - self.dx/2) / units,
+            float(self.x[-1] + self.dx/2) / units,
+            float(self.y[0] - self.dy/2)/ units,
+            float(self.y[-1] + self.dy/2) / units,
+        ],
+        interpolation="spline36", origin = "lower")
 
     im = ax.imshow(
         complex_to_rgba(E, max_val = max_val),

@@ -23,7 +23,9 @@ All rights reserved.
 class PolychromaticField:
     def __init__(self, spectrum, extent_x, extent_y, Nx, Ny, spectrum_size = 180, spectrum_divisions = 30):
         global bd
+        global backend_name
         from .util.backend_functions import backend as bd
+        from .util.backend_functions import backend_name
 
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -125,7 +127,7 @@ class PolychromaticField:
 
 
 
-        if bd != np:
+        if backend_name == 'cupy':
             bd.cuda.Stream.null.synchronize()
         rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
         rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
@@ -213,7 +215,7 @@ class PolychromaticField:
             XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
             sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
 
-        if bd != np:
+        if backend_name == 'cupy':
             bd.cuda.Stream.null.synchronize()
 
         self.xx = M_abs * self.xx

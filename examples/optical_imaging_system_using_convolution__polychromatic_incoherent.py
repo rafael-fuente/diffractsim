@@ -13,6 +13,8 @@ All rights reserved.
 
 def get_colors_at_image_plane(F, radius, M,  zi, z0):
     from diffractsim.util.backend_functions import backend as bd
+    from diffractsim.util.backend_functions import backend_name
+
     import numpy as np
     import time
     import progressbar
@@ -83,7 +85,7 @@ def get_colors_at_image_plane(F, radius, M,  zi, z0):
         XYZ = F.cs.spec_partition_to_XYZ(bd.outer(Iλ, F.spec_partitions[i]),i)
         sRGB_linear += F.cs.XYZ_to_sRGB_linear(XYZ)
 
-    if bd != np:
+    if backend_name == 'cupy':
         bd.cuda.Stream.null.synchronize()
 
     F.xx = M_abs * F.xx

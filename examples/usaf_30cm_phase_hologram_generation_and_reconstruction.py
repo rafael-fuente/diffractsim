@@ -1,11 +1,11 @@
 import diffractsim
-diffractsim.set_backend("CPU")
+diffractsim.set_backend("JAX")
 
 from diffractsim import MonochromaticField, mm, nm, cm, CustomPhaseRetrieval, ApertureFromImage
 
 
 #Note: CustomPhaseRetrieval requires autograd which is not installed by default with diffractsim. 
-# To install autograd, type: 'pip install autograd'
+# To install autograd, type: 'pip install -U jax'
 
 
 # Generate a 30cm plane phase hologram

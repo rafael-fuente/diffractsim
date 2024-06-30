@@ -27,7 +27,9 @@ class FourierPhaseRetrieval():
         "class for retrieve the phase mask required to reconstruct an image (specified at target amplitude path) at the Fourier plane"
 
         global bd
+        global backend_name
         from ..util.backend_functions import backend as bd
+        from ..util.backend_functions import backend_name
 
         self.target_amplitude = np.array(load_graymap_image_as_array(target_amplitude_path, new_size = new_size))
         
@@ -146,10 +148,10 @@ class FourierPhaseRetrieval():
     def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
 
 
-        if bd == np:
-            save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
-        else:
+        if backend_name == 'cupy':
             save_phase_mask_as_image(name, self.retrieved_phase.get(), phase_mask_format = phase_mask_format)
+        else:
+            save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
 
             
 

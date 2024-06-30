@@ -14,23 +14,25 @@ All rights reserved.
 
 def plot_intensity(self, I, square_root = False, figsize=(7, 6), 
                   xlim=None, ylim=None, grid = False, text = None, units = mm,
-                  slice_y_pos = None, slice_x_pos = None, dark_background = True):
+                  slice_y_pos = None, slice_x_pos = None, dark_background = False):
     """visualize the diffraction pattern intesity with matplotlib"""
     
     from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
+
     if dark_background == True:
         plt.style.use("dark_background")
     else:
         plt.style.use("default")
 
     if square_root == False:
-        if bd != np:
+        if backend_name == 'cupy':
             I = I.get()
         else:
             I = I
 
     else:
-        if bd != np:
+        if backend_name == 'cupy':
             I = np.sqrt(I.get())
         else:
             I = np.sqrt(I)
@@ -109,7 +111,7 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
         ax_slice.set_title("X slice")
         #plt.subplots_adjust(right=2)
 
-        if bd != np:
+        if backend_name == 'cupy':
             x = self.x.get()
             y = self.y.get()
         else:
@@ -142,7 +144,7 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
         ax_slice.set_title("Y slice")
         #plt.subplots_adjust(right=2)
 
-        if bd != np:
+        if backend_name == 'cupy':
             x = self.x.get()
             y = self.y.get()
         else:

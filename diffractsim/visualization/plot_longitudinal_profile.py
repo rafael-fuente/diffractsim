@@ -12,16 +12,17 @@ All rights reserved.
 
 """
 
-def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, extent, xlim=None, ylim=None, units = mm,  z_units = cm, dark_background = True):
+def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, extent, xlim=None, ylim=None, units = mm,  z_units = cm, dark_background = False):
     """visualize the diffraction pattern longitudinal profile colors with matplotlib"""
 
     from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
     if dark_background == True:
         plt.style.use("dark_background")
     else:
         plt.style.use("default")
 
-    if bd != np:
+    if backend_name == 'cupy':
         longitudinal_profile_rgb = longitudinal_profile_rgb.transpose(1,0,2).get()
     else:
         longitudinal_profile_rgb = longitudinal_profile_rgb.transpose(1,0,2)
@@ -82,13 +83,13 @@ def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, extent,  
     I = I.transpose(1,0)
 
     if square_root == False:
-        if bd != np:
+        if backend_name == 'cupy':
             I = I.get()
         else:
             I = I
 
     else:
-        if bd != np:
+        if backend_name == 'cupy':
             I = np.sqrt(I.get())
         else:
             I = np.sqrt(I)

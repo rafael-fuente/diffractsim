@@ -12,15 +12,17 @@ All rights reserved.
 
 """
 
-def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, units = mm, dark_background = True):
+def plot_colors(self, rgb, figsize=(6, 6), xlim=None, ylim=None, text = None, units = mm, dark_background = False):
     """visualize the diffraction pattern colors with matplotlib"""
 
     from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
+    
     if dark_background == True:
         plt.style.use("dark_background")
     else:
         plt.style.use("default")
-    if bd != np:
+    if backend_name == 'cupy':
         rgb = rgb.get()
 
     fig = plt.figure(figsize=figsize)

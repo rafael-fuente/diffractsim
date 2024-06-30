@@ -1,5 +1,5 @@
 import diffractsim
-diffractsim.set_backend("CPU") #Change the string to "CUDA" to use GPU acceleration
+diffractsim.set_backend("CUDA") #Change the string to "CUDA" to use GPU acceleration
 
 from diffractsim import PolychromaticField,ApertureFromImage, cf, mm, cm
 

@@ -3,7 +3,9 @@ from setuptools import setup, find_packages
 long_description = """
 # Diffractsim: A diffraction simulator for exploring and visualizing physical optics
 Flexible, and easy-to-use Python diffraction simulator that focuses on visualizing physical optics phenomena.
-The simulator uses mainly scalar diffraction techniques for light propagation, provides an interface for simulation set up, and includes several plotting options, counting with CIE Color matching functions for accurate color reproduction.
+The simulator uses mainly scalar diffraction techniques for light propagation, provides an interface for simulation set up, and includes several plotting options, counting with CIE Color matching functions for accurate color reproduction. 
+The implemented methods are differentiable when using the JAX-backend, enabling optimization and design of the optical setups.
+
 
 The basic use of this simulator using the angular spectrum method is described in this [article](https://rafael-fuente.github.io/simulating-diffraction-patterns-with-the-angular-spectrum-method-and-python.html).
 Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLYkZehxPE_IhyO6wC21nFP0q1ZYGIW4l1&index=1) to see the animated simulations!
@@ -12,8 +14,8 @@ Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLY
 
 setup(
     name='diffractsim',
-    version='2.2.3',
-    description='A diffraction simulator for exploring and visualizing physical optics',
+    version='2.2.4',
+    description='A flexible diffraction simulator for exploring and visualizing physical optics',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/rafael-fuente/Diffraction-Simulations--Angular-Spectrum-Method',
@@ -23,7 +25,7 @@ setup(
     author_email='rafael.fuente.herrezuelo@gmail.com',
     license='MPL 2.0',
     packages=find_packages(),
-    install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar', 'autograd'],
+    install_requires=['numpy', 'scipy', 'Pillow', 'matplotlib', 'progressbar'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
 

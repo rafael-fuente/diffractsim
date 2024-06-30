@@ -1,4 +1,5 @@
 from .backend_functions import backend as bd
+from .backend_functions import backend_name
 
 def chirpz(x, A, W, M):
     """
@@ -27,17 +28,13 @@ def chirpz(x, A, W, M):
     X(z_k) = \sum_{n=0}^{N-1} x_n z_k^{-n}
     """
     global bd
+    global backend_name
+
     from .backend_functions import backend as bd
+    from .backend_functions import backend_name
 
 
-    # Handle default arguments
-
-    if bd.issubdtype(bd.complex128, x.dtype) or bd.issubdtype(bd.float64, x.dtype):
-        dtype = x.dtype
-    else:
-        dtype = float
-
-    x = bd.asarray(x, dtype=bd.complex128)
+    x = bd.asarray(x, dtype=complex)
     P = x.shape
 
     N = P[-1]
@@ -49,9 +46,14 @@ def chirpz(x, A, W, M):
     Y = bd.fft.fft(y, L)
 
     n = bd.arange(L, dtype=float)
-    v = bd.zeros(L, dtype=bd.complex128)
-    v[:M] = bd.power(W, -n[:M] ** 2 / 2.)
-    v[L-N+1:] = bd.power(W, -(L - n[L-N+1:]) ** 2 / 2.)
+    v = bd.zeros(L, dtype=complex)
+    if backend_name == 'jax':
+        v = v.at[:M].set(bd.power(W, -n[:M] ** 2 / 2.))
+        v = v.at[L-N+1:].set(bd.power(W, -(L - n[L-N+1:]) ** 2 / 2.))
+    else:
+        v[:M] = bd.power(W, -n[:M] ** 2 / 2.)
+        v[L-N+1:] = bd.power(W, -(L - n[L-N+1:]) ** 2 / 2.)
+
     V = bd.fft.fft(v)
 
     g = bd.fft.ifft(bd.tile(V, (P[0], 1)) * Y)[:,:M]
