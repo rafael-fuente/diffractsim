@@ -70,10 +70,12 @@ def plot_longitudinal_profile_colors(self, longitudinal_profile_rgb, extent, xli
     plt.show()
 
 
-def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, extent,  square_root = False, grid = False, xlim=None, ylim=None, units = mm,  z_units = cm, dark_background = True):
+def plot_longitudinal_profile_intensity(self,  longitudinal_profile_E, extent,  square_root = False, grid = False, xlim=None, ylim=None, units = mm,  z_units = cm, dark_background = False):
     """visualize the diffraction pattern longitudinal profile intensity with matplotlib"""
 
     from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
+
     if dark_background == True:
         plt.style.use("dark_background")
     else:

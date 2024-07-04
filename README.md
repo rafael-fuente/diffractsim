@@ -26,7 +26,7 @@ pip install diffractsim
 
 Alternatively, to download the examples and the apertures as well, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
 ```
-python setup.py install
+python install .
 ```
 
 ## Examples

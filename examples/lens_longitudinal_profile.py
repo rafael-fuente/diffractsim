@@ -16,3 +16,7 @@ longitudinal_profile_rgb, longitudinal_profile_E, extent = F.get_longitudinal_pr
 #plot colors
 F.plot_longitudinal_profile_colors(longitudinal_profile_rgb = longitudinal_profile_rgb, extent = extent)
 print(longitudinal_profile_rgb.shape)
+
+
+F.plot_longitudinal_profile_intensity(longitudinal_profile_E = longitudinal_profile_E, extent = extent, square_root = True)
+print(longitudinal_profile_E.shape)
