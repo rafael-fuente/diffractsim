@@ -237,23 +237,21 @@ class MonochromaticField:
 
     def interpolate(self, Nx, Ny):
         """Interpolate the field to the new shape (Nx,Ny)"""
-        from scipy.interpolate import interp2d
+        from scipy.interpolate import RectBivariateSpline
 
 
         if backend_name == 'cupy':
             self.E = self.E.get()
 
-        fun_real = interp2d(
+        fun_real = RectBivariateSpline(
                     self.dx*(np.arange(self.Nx)-self.Nx//2),
                     self.dy*(np.arange(self.Ny)-self.Ny//2),
-                    np.real(self.E),
-                    kind="cubic",)
+                    np.real(self.E))
 
-        fun_imag = interp2d(
+        fun_imag = RectBivariateSpline(
                     self.dx*(np.arange(self.Nx)-self.Nx//2),
                     self.dy*(np.arange(self.Ny)-self.Ny//2),
-                    np.imag(self.E),
-                    kind="cubic",)
+                    np.imag(self.E))
 
 
         self.Nx = Nx
