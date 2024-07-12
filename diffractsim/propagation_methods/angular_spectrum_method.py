@@ -27,7 +27,7 @@ def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
 
     fx = bd.fft.fftshift(bd.fft.fftfreq(simulation.Nx, d = simulation.dx))
     fy = bd.fft.fftshift(bd.fft.fftfreq(simulation.Ny, d = simulation.dy))
-    fxx, fyy = np.meshgrid(fx, fy)
+    fxx, fyy = bd.meshgrid(fx, fy)
 
     argument = (2 * bd.pi)**2 * ((1. / λ) ** 2 - fxx ** 2 - fyy ** 2)
 

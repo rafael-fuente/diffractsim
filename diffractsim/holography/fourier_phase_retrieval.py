@@ -48,7 +48,7 @@ class FourierPhaseRetrieval():
         self.retrieved_phase = None
 
 
-    def retrieve_phase_mask(self, max_iter = 200, method = 'Conjugate-Gradient', CG_step = 1., bluestein_zoom = 1):
+    def retrieve_phase_mask(self, max_iter = 200, method = 'Conjugate-Gradient', CG_step = 1.):
         
         implemented_methods = ('Gerchberg-Saxton', 'Conjugate-Gradient')
 
