@@ -7,9 +7,9 @@ illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt",
 high_pressure_sodium = np.loadtxt(Path(__file__).parent / "./data/high_pressure_sodium.txt", usecols = 1)
 incandescent_tugsten = np.loadtxt(Path(__file__).parent / "./data/incandescent_tugsten.txt", usecols = 1)
 compact_fluorescent_lamp = np.loadtxt(Path(__file__).parent / "./data/compact_fluorescent_lamp.txt", usecols = 1)
+mercury_vapor = np.loadtxt(Path(__file__).parent / "./data/mercury_vapor.txt", usecols = 1)
 LED_6770K = np.loadtxt(Path(__file__).parent / "./data/LED_6770K.txt", usecols = 1)
 ceramic_metal_halide = np.loadtxt(Path(__file__).parent / "./data/ceramic_metal_halide.txt", usecols = 1)
-mercury_vapor = np.loadtxt(Path(__file__).parent / "./data/mercury_vapor.txt", usecols = 1)
 cie_cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols = 1)
 
 """
