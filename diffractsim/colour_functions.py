@@ -3,7 +3,14 @@ from pathlib import Path
 from scipy.interpolate import CubicSpline
 from .util.backend_functions import backend as bd
 
-illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols=(1))
+illuminant_d65 = np.loadtxt(Path(__file__).parent / "./data/illuminant_d65.txt", usecols = 1)
+high_pressure_sodium = np.loadtxt(Path(__file__).parent / "./data/high_pressure_sodium.txt", usecols = 1)
+incandescent_tugsten = np.loadtxt(Path(__file__).parent / "./data/incandescent_tugsten.txt", usecols = 1)
+compact_fluorescent_lamp = np.loadtxt(Path(__file__).parent / "./data/compact_fluorescent_lamp.txt", usecols = 1)
+LED_6770K = np.loadtxt(Path(__file__).parent / "./data/LED_6770K.txt", usecols = 1)
+ceramic_metal_halide = np.loadtxt(Path(__file__).parent / "./data/ceramic_metal_halide.txt", usecols = 1)
+mercury_vapor = np.loadtxt(Path(__file__).parent / "./data/mercury_vapor.txt", usecols = 1)
+cie_cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols = 1)
 
 """
 MPL 2.0 Clause License 
@@ -12,28 +19,29 @@ Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 """
 
+
 class ColourSystem:
-    def __init__(self, spectrum_size = 400, spec_divisions = 40, clip_method = 1):
+    def __init__(self, spectrum_size=400, spec_divisions=40, clip_method=1):
         global bd
         from .util.backend_functions import backend as bd
 
         self.spectrum_size = spectrum_size
         # import CIE XYZ standard observer color matching functions
 
-        cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols=(1, 2, 3))
-        
-        self.Δλ = (779-380)/spectrum_size
-        self.λ_list = np.linspace(380,779, spectrum_size)
+        cmf = np.loadtxt(Path(__file__).parent / "./data/cie-cmf.txt", usecols = (1, 2, 3))
 
-        if spectrum_size == 400: 
-            
+        self.Δλ = (779 - 380) / spectrum_size
+        self.λ_list = np.linspace(380, 779, spectrum_size)
+
+        if spectrum_size == 400:
+
             # CIE XYZ standard observer color matching functions
-            self.cie_x =  cmf.T[0]
-            self.cie_y =  cmf.T[1]
-            self.cie_z =  cmf.T[2]
+            self.cie_x = cmf.T[0]
+            self.cie_y = cmf.T[1]
+            self.cie_z = cmf.T[2]
 
-        else: #by default spectrum has a size of 400. If new size, we interpolate
-            λ_list_old = np.linspace(380,779, 400)
+        else:  # by default spectrum has a size of 400. If new size, we interpolate
+            λ_list_old = np.linspace(380, 779, 400)
             self.cie_x = np.interp(self.λ_list, λ_list_old, cmf.T[0])
             self.cie_y = np.interp(self.λ_list, λ_list_old, cmf.T[1])
             self.cie_z = np.interp(self.λ_list, λ_list_old, cmf.T[2])
@@ -54,8 +62,8 @@ class ColourSystem:
         self.T = bd.vstack(
             [[3.2406, -1.5372, -0.4986], [-0.9689, 1.8758, 0.0415], [0.0557, -0.2040, 1.0570]]
         )
-        
-        #clip methods for negative sRGB values:
+
+        # clip methods for negative sRGB values:
 
         self.CLIP_CLAMP_TO_ZERO = 0
         self.CLIP_ADD_WHITE = 1
@@ -73,7 +81,7 @@ class ColourSystem:
                                                                          [Z1,Z2,Z3...]])
         """
 
-        rgb = bd.tensordot(self.T, XYZ, axes=([1, 0]))
+        rgb = bd.tensordot(self.T, XYZ, axes = ([1, 0]))
 
         if self.clip_method == self.CLIP_CLAMP_TO_ZERO:
             # set negative rgb values to zero
@@ -83,9 +91,9 @@ class ColourSystem:
         if self.clip_method == self.CLIP_ADD_WHITE:
             # add enough white to make all rgb values nonnegative
             # find max negative rgb (or 0.0 if all non-negative), we need that much white
-            rgb_min = bd.amin(rgb, axis=0)
+            rgb_min = bd.amin(rgb, axis = 0)
             # get max positive component
-            rgb_max = bd.amax(rgb, axis=0)
+            rgb_max = bd.amax(rgb, axis = 0)
 
             # get scaling factor to maintain max rgb after adding white
             scaling = bd.where(rgb_max > 0.0, rgb_max / (rgb_max - rgb_min + 0.00001), bd.ones(rgb.shape))
@@ -94,8 +102,7 @@ class ColourSystem:
             rgb = bd.where(rgb_min < 0.0, scaling * (rgb - rgb_min), rgb)
             return rgb
 
-
-    def sRGB_linear_to_sRGB(self,rgb_linear):
+    def sRGB_linear_to_sRGB(self, rgb_linear):
 
         """
         Convert a linear RGB color to a non linear RGB color (gamma correction).
@@ -114,14 +121,13 @@ class ColourSystem:
         )
 
         # clip intensity if needed (rgb values > 1.0) by scaling
-        rgb_max = bd.amax(rgb, axis=0) + 0.00001  # avoid division by zero
+        rgb_max = bd.amax(rgb, axis = 0) + 0.00001  # avoid division by zero
         intensity_cutoff = 1.0
         rgb = bd.where(rgb_max > intensity_cutoff, rgb * intensity_cutoff / (rgb_max), rgb)
 
         return rgb
 
-
-    def sRGB_to_sRGB_linear(self,rgb):
+    def sRGB_to_sRGB_linear(self, rgb):
         """
         Convert a RGB color to a linear RGB color.
 
@@ -131,7 +137,6 @@ class ColourSystem:
                                                                          [B1,B2,B3...]])
         """
         return bd.where(rgb <= 0.03928, rgb / 12.92, bd.power((rgb + 0.055) / 1.055, 2.4))
-
 
     def XYZ_to_sRGB(self, XYZ):
         """
@@ -148,7 +153,6 @@ class ColourSystem:
 
         return rgb
 
-
     def spec_to_XYZ(self, spec):
         """
         Convert a spectrum to an XYZ color.
@@ -158,8 +162,6 @@ class ColourSystem:
         Number of samples of each spectral intensity list doesn't matter, but they must be equally spaced.
         """
 
-        
-        
         if spec.ndim == 1:
 
             X = bd.dot(spec, self.cie_x) * self.Δλ * 0.003975 * 683.002
@@ -168,10 +170,9 @@ class ColourSystem:
             return bd.array([X, Y, Z])
 
         else:
-            return bd.tensordot(spec, self.cie_xyz, axes=([1, 1])).T * self.Δλ * 0.003975 * 683.002
+            return bd.tensordot(spec, self.cie_xyz, axes = ([1, 1])).T * self.Δλ * 0.003975 * 683.002
 
-
-    def spec_partition_to_XYZ(self, spec_partition, index = 0):
+    def spec_partition_to_XYZ(self, spec_partition, index=0):
         """
         Convert a spectrum to an XYZ color.
 
@@ -187,9 +188,7 @@ class ColourSystem:
             return bd.array([X, Y, Z])
 
         else:
-            return bd.tensordot(spec_partition, self.cie_xyz_partitions[index], axes=([1, 1])).T * self.Δλ * 0.003975 * 683.002
-
-
+            return bd.tensordot(spec_partition, self.cie_xyz_partitions[index], axes = ([1, 1])).T * self.Δλ * 0.003975 * 683.002
 
     def spec_to_sRGB(self, spec):
         """
@@ -204,12 +203,10 @@ class ColourSystem:
         XYZ = self.spec_to_XYZ(spec)
         return self.XYZ_to_sRGB(XYZ)
 
-
-    def wavelength_to_XYZ(self,wavelength, intensity):
-
+    def wavelength_to_XYZ(self, wavelength, intensity):
 
         if (wavelength > 380) and (wavelength < 780):
-            index = int(wavelength-380)
+            index = int(wavelength - 380)
             X = intensity * self.cie_x[index] * self.Δλ * 0.003975 * 683.002
             Y = intensity * self.cie_y[index] * self.Δλ * 0.003975 * 683.002
             Z = intensity * self.cie_z[index] * self.Δλ * 0.003975 * 683.002
@@ -219,7 +216,6 @@ class ColourSystem:
             Z = intensity * 0.0
 
         return bd.array([X, Y, Z])
-
 
     def wavelength_to_sRGB(self, wavelength, intensity):
 

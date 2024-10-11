@@ -32,9 +32,7 @@ class MonochromaticField:
         intensity: intensity of the field
         """
         global bd
-        global backend_name
         from .util.backend_functions import backend as bd
-        from .util.backend_functions import backend_name
         
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -107,8 +105,6 @@ class MonochromaticField:
         
         self.z += z
         self.E = bluestein_method(self, self.E, z, self.λ, x_interval, y_interval)
-
-
 
 
     def propagate_to_image_plane(self, pupil, M, zi, z0, scale_factor = 1):
@@ -237,21 +233,23 @@ class MonochromaticField:
 
     def interpolate(self, Nx, Ny):
         """Interpolate the field to the new shape (Nx,Ny)"""
-        from scipy.interpolate import RectBivariateSpline
+        from scipy.interpolate import interp2d
 
 
-        if backend_name == 'cupy':
+        if bd != np:
             self.E = self.E.get()
 
-        fun_real = RectBivariateSpline(
+        fun_real = interp2d(
                     self.dx*(np.arange(self.Nx)-self.Nx//2),
                     self.dy*(np.arange(self.Ny)-self.Ny//2),
-                    np.real(self.E))
+                    np.real(self.E),
+                    kind="cubic",)
 
-        fun_imag = RectBivariateSpline(
+        fun_imag = interp2d(
                     self.dx*(np.arange(self.Nx)-self.Nx//2),
                     self.dy*(np.arange(self.Ny)-self.Ny//2),
-                    np.imag(self.E))
+                    np.imag(self.E),
+                    kind="cubic",)
 
 
         self.Nx = Nx
@@ -306,12 +304,8 @@ class MonochromaticField:
                 self.yy/=scale_factor
 
             rgb = self.get_colors()
-            if backend_name == 'jax':
-                longitudinal_profile_rgb = longitudinal_profile_rgb.at[i,:,:].set( rgb[self.Ny//2,:,:])
-                longitudinal_profile_E = longitudinal_profile_E.at[i,:].set(self.E[self.Ny//2,:])
-            else:
-                longitudinal_profile_rgb[i,:,:]  = rgb[self.Ny//2,:,:]
-                longitudinal_profile_E[i,:] = self.E[self.Ny//2,:]
+            longitudinal_profile_rgb[i,:,:]  = rgb[self.Ny//2,:,:]
+            longitudinal_profile_E[i,:] = self.E[self.Ny//2,:]
             self.E = np.copy(self.E0)
 
 
@@ -340,4 +334,4 @@ class MonochromaticField:
             "The wavelength, dimensions and sampling of the interfering fields must be identical")
 
 
-    from .visualization import plot_colors, plot_phase, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity
+    from .visualization import save_plot, plot_colors, plot_phase, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity
