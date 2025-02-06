@@ -54,8 +54,8 @@ def bluestein_method(simulation, E, z, λ, x_interval, y_interval):
     simulation.dx = simulation.x[1] - simulation.x[0]
     simulation.dy = simulation.y[1] - simulation.y[0]
 
-    simulation.extent_x = simulation.x[1] - simulation.x[0] + simulation.dx
-    simulation.extent_y = simulation.y[1] - simulation.y[0] + simulation.dy
+    simulation.extent_x = simulation.x[-1] - simulation.x[0] + simulation.dx
+    simulation.extent_y = simulation.y[-1] - simulation.y[0] + simulation.dy
 
     return E*factor * bd.exp(1j*bd.pi/(λ*z)  * (simulation.xx**2 + simulation.yy**2)  +   1j*2*bd.pi/λ * z ) / (1j*z*λ)
 
