@@ -23,9 +23,7 @@ All rights reserved.
 class PolychromaticField:
     def __init__(self, spectrum, extent_x, extent_y, Nx, Ny, spectrum_size = 180, spectrum_divisions = 30):
         global bd
-        global backend_name
         from .util.backend_functions import backend as bd
-        from .util.backend_functions import backend_name
 
         self.extent_x = extent_x
         self.extent_y = extent_y
@@ -97,7 +95,7 @@ class PolychromaticField:
 
         bar = progressbar.ProgressBar()
 
-        # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
+        # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximate the final colour
         # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
         
 
@@ -126,13 +124,18 @@ class PolychromaticField:
                         sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
 
 
-
-        if backend_name == 'cupy':
+        if bd != np:
             bd.cuda.Stream.null.synchronize()
         rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
         rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
         print ("Computation Took", time.time() - t0)
         return rgb
+
+
+    def get_field(self):
+        """get field of the cross-section profile at the current distance"""
+
+        return self.E
 
 
     def scale_propagate(self, z, scale_factor):
@@ -176,7 +179,6 @@ class PolychromaticField:
         """
 
 
-
         for j in range(len(self.optical_elements)):
             self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
 
@@ -215,7 +217,7 @@ class PolychromaticField:
             XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
             sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
 
-        if backend_name == 'cupy':
+        if bd != np:
             bd.cuda.Stream.null.synchronize()
 
         self.xx = M_abs * self.xx
@@ -233,4 +235,4 @@ class PolychromaticField:
 
 
 
-    from .visualization import plot_colors
+    from .visualization import save_plot, plot_colors
