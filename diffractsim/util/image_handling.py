@@ -55,16 +55,20 @@ def convert_graymap_image_to_hsvmap_image(img):
 
 
 
-def resize_array(img_array, new_shape):
+from scipy.interpolate import RegularGridInterpolator
 
+def resize_array(img_array, new_shape):
     Ny, Nx = img_array.shape
+    x = np.linspace(0, 1, Nx)
+    y = np.linspace(0, 1, Ny)
     
-    from scipy.interpolate import interp2d
-    fun = interp2d(
-        np.linspace(0, 1, Nx),
-        np.linspace(0, 1, Ny),
-        img_array,
-        kind="cubic",
-    )
-    resize_img_array = fun(np.linspace(0, 1, new_shape[1]), np.linspace(0, 1, new_shape[0]))
+    interpolator = RegularGridInterpolator((y, x), img_array, method="cubic", bounds_error=False, fill_value=0)
+    
+    new_x = np.linspace(0, 1, new_shape[1])
+    new_y = np.linspace(0, 1, new_shape[0])
+    new_grid = np.meshgrid(new_y, new_x, indexing='ij')
+    
+    resize_img_array = interpolator(np.array([new_grid[0].flatten(), new_grid[1].flatten()]).T).reshape(new_shape)
+    
     return resize_img_array
+
