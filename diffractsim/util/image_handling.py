@@ -59,12 +59,10 @@ def resize_array(img_array, new_shape):
 
     Ny, Nx = img_array.shape
     
-    from scipy.interpolate import interp2d
-    fun = interp2d(
+    from scipy.interpolate import RectBivariateSpline
+    fun = RectBivariateSpline(
         np.linspace(0, 1, Nx),
         np.linspace(0, 1, Ny),
-        img_array,
-        kind="cubic",
-    )
+        img_array)
     resize_img_array = fun(np.linspace(0, 1, new_shape[1]), np.linspace(0, 1, new_shape[0]))
     return resize_img_array
