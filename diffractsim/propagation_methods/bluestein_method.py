@@ -41,10 +41,11 @@ def bluestein_method(simulation, E, z, λ, x_interval, y_interval):
     dfx_zfft = fx_zfft[1]-fx_zfft[0]
     dfy_zfft = fy_zfft[1]-fy_zfft[0]
 
-
-    nn, mm = bd.meshgrid((bd.linspace(0,(simulation.Nx-1),simulation.Nx)*dfx_zfft/dfx ), (bd.linspace(0,(simulation.Ny-1),simulation.Ny)*dfy_zfft/dfy ))
-    factor = (simulation.dx*simulation.dy* bd.exp(bd.pi*1j * (nn + mm)))
-
+    fxx, fyy = bd.meshgrid(fx_zfft, fy_zfft)
+    x_shift = simulation.x[0]
+    y_shift = simulation.y[0]
+    factor = (simulation.dx*simulation.dy * bd.exp(-1j*2*bd.pi*x_shift*fxx -1j*2*bd.pi*y_shift*fyy))
+    print('test')
 
     simulation.x = fx_zfft*(z*λ)
     simulation.y = fy_zfft*(z*λ)
