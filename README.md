@@ -20,9 +20,7 @@ The basic use of this simulator using the angular spectrum method is described i
 
 
 ## Installation
-```
-pip install diffractsim
-```
+
 
 Alternatively, to download the examples and the apertures as well, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
 ```
@@ -121,10 +119,22 @@ python axicon_longitudinal_profile.py
 
 The problem of phase retrieval is a classic one in optics and arises when one is interested in retrieving the wavefront from two intensity measurements acquired in two different planes. Diffractsim provides a simple implementation of this problem.
 
-In the following example, the GitHub logo is recovered at the Fourier plane from a coherently illuminated square-shaped aperture. The script generates a phase mask, which is stored as an image using an HSV colormap and then placed on the aperture to reconstruct the desired image.
+In the following example, the GitHub logo is recovered at the Fourier plane from a coherently illuminated square-shaped aperture. The script generates a phase mask, which is stored as an image using an HSV colourmap and then placed on the aperture to reconstruct the desired image. The phase mask can be reproduced with, for example, spatial light modulators (SLMs) and metasurfaces.
 
 ```
 python phase_hologram_github_logo_generation_and_reconstruction.py
 ```
 
 [![animation](/images/github_logo.gif)](/examples/phase_hologram_github_logo_generation_and_reconstruction.py)
+
+
+## Citing `Diffractsim`
+```bibtex
+@article{Diffractsim,
+  title = {A diffraction simulator for exploring and visualizing physical optics},
+  author = {Rafael de la Fuente Herrezuelo},
+  journal = {GitHub},
+  doi = {https://doi.org/10.5281/zenodo.6843673},
+  url = {https://github.com/rafael-fuente/diffractsim},
+  year = {2025},
+}
