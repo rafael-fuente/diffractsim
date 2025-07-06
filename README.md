@@ -134,7 +134,7 @@ python phase_hologram_github_logo_generation_and_reconstruction.py
   title = {A diffraction simulator for exploring and visualizing physical optics},
   author = {Rafael de la Fuente Herrezuelo},
   journal = {GitHub},
-  doi = {https://doi.org/10.5281/zenodo.6843673},
+  doi = {https://doi.org/10.5281/zenodo.6147771},
   url = {https://github.com/rafael-fuente/diffractsim},
   year = {2025},
 }
