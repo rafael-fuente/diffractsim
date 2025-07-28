@@ -45,7 +45,6 @@ def bluestein_method(simulation, E, z, λ, x_interval, y_interval):
     x_shift = simulation.x[0]
     y_shift = simulation.y[0]
     factor = (simulation.dx*simulation.dy * bd.exp(-1j*2*bd.pi*x_shift*fxx -1j*2*bd.pi*y_shift*fyy))
-    print('test')
 
     simulation.x = fx_zfft*(z*λ)
     simulation.y = fy_zfft*(z*λ)
