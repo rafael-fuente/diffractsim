@@ -129,12 +129,5 @@ python phase_hologram_github_logo_generation_and_reconstruction.py
 
 
 ## Citing `Diffractsim`
-```bibtex
-@article{Diffractsim,
-  title = {A flexible Python diffraction simulator},
-  author = {Rafael de la Fuente Herrezuelo},
-  journal = {GitHub},
-  doi = {https://doi.org/10.5281/zenodo.6147771},
-  url = {https://github.com/rafael-fuente/diffractsim},
-  year = {2025},
-}
+
+R. de la Fuente Herrezuelo, <i>diffractsim: A flexible python diffraction simulator<i>, GitHub (2022), https://doi.org/10.5281/zenodo.6147771
