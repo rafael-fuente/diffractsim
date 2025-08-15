@@ -176,3 +176,145 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
 
 
     plt.show()
+
+
+
+
+def plot_farfield(self, α, β, Irad, figsize=(7, 6), 
+                  alpha_lim=None, beta_lim=None, grid = False, text = None, dark_background = False):
+    """visualize the far field diffraction pattern intesity with matplotlib"""
+    
+    from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
+    
+    
+
+    if dark_background == True:
+        plt.style.use("dark_background")
+    else:
+        plt.style.use("default")
+
+    if backend_name == 'cupy':
+        Irad = Irad.get()
+    else:
+        Irad = Irad
+
+
+    fig = plt.figure(figsize=figsize)
+
+    ax = fig.add_subplot(1, 1, 1)
+
+
+    if grid == True:
+        ax.grid(alpha =0.2)
+
+    if alpha_lim != None:
+        ax.set_xlim(np.array(alpha_lim))
+
+    if beta_lim != None:
+        ax.set_ylim(np.array(beta_lim))
+
+
+
+    if text == None:
+        ax.set_title("Far field")
+    else: 
+        ax.set_title(text)
+
+
+    dα = α[1]-α[0]
+    dβ = β[1]-β[0]
+
+
+    im = ax.imshow(
+        Irad, cmap= 'inferno',
+        extent=[α[0],α[-1] + dα,  β[0],  β[-1] + dβ],
+        interpolation="spline36", origin = "lower"
+    )
+    ax.set_xlabel('$α$')
+    ax.set_ylabel("$β$")
+
+    
+    
+    cb = fig.colorbar(im, orientation = 'vertical')
+
+    cb.set_label(r"$\frac{\partial P_e(α,β)}{\partial \Omega \cos(\theta)} [a.u.]$", fontsize=10, labelpad =  10 )
+    ax.set_aspect('equal')
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+def plot_farfield_spherical_coordinates(self, α, β, Irad, figsize=(7, 6), 
+                  theta_lim=None,  text = None, dark_background = False):
+    """visualize the far field diffraction pattern intesity with matplotlib"""
+    
+    from ..util.backend_functions import backend as bd
+    from ..util.backend_functions import backend_name
+
+    if dark_background == True:
+        plt.style.use("dark_background")
+    else:
+        plt.style.use("default")
+
+    if backend_name == 'cupy':
+        Irad = Irad.get()
+    else:
+        Irad = Irad
+
+    if theta_lim == None:
+        theta_lim = 90
+        
+        
+    # interpolate to spherical coordinates
+    from scipy.interpolate import interpn
+    oldpoints = (α,β)
+    Nθ, Nφ  = 4096,4096
+    θ = np.linspace(0,theta_lim *np.pi/180 ,Nθ)
+    φ = np.linspace(0,2*np.pi,Nφ)
+    θθ,φφ = np.meshgrid(θ,φ, indexing='ij')
+
+    αα = np.sin(θθ)*np.cos(φφ) 
+    ββ = np.sin(θθ)*np.sin(φφ)
+    γγ = np.cos(θθ)
+    newpoints = np.array(np.vstack([αα.ravel(),ββ.ravel()]).T)
+    Irad_ = interpn(oldpoints, np.array(np.real(Irad).T), newpoints, bounds_error=False,fill_value = 0)  .reshape((Nθ, Nφ))
+        
+        
+        
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(projection='polar')
+
+    if text == None:
+        ax.set_title("Far field")
+    else: 
+        ax.set_title(text)
+
+
+    ax.grid(False)
+    im = ax.pcolormesh(φ, θ* 180 / np.pi, Irad_, cmap = 'inferno')
+
+    ax.set_ylim([0,theta_lim])
+    ax.tick_params(axis='y', colors='white')
+
+    label_position=ax.get_rlabel_position()
+
+    import math
+    ax.text(math.radians(label_position- label_position*0.5),(ax.get_rmax())/2.,'θ°',ha='center',va='center', color  = 'white')
+
+    ax.grid(alpha =0.2)
+
+    cb1 = fig.colorbar(im, orientation = 'vertical', pad = 0.1, shrink = 0.8)
+
+    cb1.set_label(r'$\frac{\partial P_e(θ,φ)}{\partial \Omega \cos(\theta)}$ [a.u.]', size= 15)
+
+    ax.set_title(r"φ")
+    plt.show()    
+    

@@ -7,6 +7,7 @@ from .propagation_methods import angular_spectrum_method, two_steps_fresnel_meth
 
 import numpy as np
 from .util.backend_functions import backend as bd
+from .util.bluestein_FFT import bluestein_fft2
 
 
 """
@@ -109,6 +110,45 @@ class MonochromaticField:
         self.E = bluestein_method(self, self.E, z, self.λ, x_interval, y_interval)
 
 
+    def get_farfield(self, alpha_interval = None, beta_interval = None):
+
+        """
+        Compute the far field radiant intensity per cosine **∂P/(∂Ωcosθ)** in a semisphere in α, β coordinates
+
+        Parameters
+        ----------
+        alpha_interval : list with the region [α0, αf] over which to evaluate the radiant intensity per cosine.
+        beta_interval : list with the region [β0, βf] over which to evaluate the radiant intensity per cosine.
+
+
+        Reference: 
+        James E. Harvey, Cynthia L. Vernold, Andrey Krywonos, and Patrick L. Thompson, 
+        "Diffracted radiance: a fundamental quantity in nonparaxial scalar diffraction theory," Appl. Opt. 38, 6469-6481 (1999)
+
+        """
+        # Compute the sampling intervals in x and y directions
+        # If no specific output region is provided, use the natural FFT frequency grid
+        if alpha_interval == None: 
+            fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d=self.dx))
+            fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d=self.dy))
+            U_f = bd.fft.fftshift(bd.fft.fft2(self.E))
+        else: # Use Bluestein's method to compute the Fourier transform
+            fx0, fx1 = bd.array(alpha_interval) / self.λ 
+            fy0, fy1 = bd.array(beta_interval) / self.λ 
+            fx = bd.linspace(fx0, fx1, self.Nx) 
+            fy = bd.linspace(fy0, fy1, self.Ny)
+            U_f = bluestein_fft2(self.E, fx0, fx1, 1/self.dx, fy0, fy1, 1/self.dy)
+        
+        fxx, fyy = bd.meshgrid(fx, fy) #create 2d arrayswith the frequencies
+        # Calculate a FT phase translation correction and scaling factor  
+        ft_factor = self.dx * self.dy * bd.exp(-1j * 2 * bd.pi * self.x[0] * fxx - 1j * 2 * bd.pi * self.y[0] * fyy)
+        U_f = U_f * ft_factor
+        α = fx * self.λ 
+        β = fy * self.λ
+
+        # Return the angular coordinates and the computed radiant_intensity distribution (Eq.2.1.32)
+        radiant_intensity_percos = bd.real(U_f * bd.conj(U_f)) / (self.λ**2)
+        return α, β, radiant_intensity_percos
 
 
     def propagate_to_image_plane(self, pupil, M, zi, z0, scale_factor = 1):
@@ -340,4 +380,4 @@ class MonochromaticField:
             "The wavelength, dimensions and sampling of the interfering fields must be identical")
 
 
-    from .visualization import plot_colors, plot_phase, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity
+    from .visualization import plot_colors, plot_phase, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity, plot_farfield, plot_farfield_spherical_coordinates
