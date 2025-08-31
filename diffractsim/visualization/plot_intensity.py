@@ -118,8 +118,11 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
             x = self.x
             y = self.y
 
-        ax_slice.plot(x/units, I[np.argmin(abs(y-slice_y_pos)),:]**2)
-        ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
+        ax_slice.plot(x/units, I[np.argmin(abs(y-slice_y_pos)),:])
+        if square_root == False:
+            ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
+        else:
+            ax_slice.set_ylabel(r'Square Root Intensity $\left[ \sqrt{W / m^2 } \right]$')
 
         if grid == True:
             ax_slice.grid(alpha =0.2)
@@ -151,8 +154,11 @@ def plot_intensity(self, I, square_root = False, figsize=(7, 6),
             x = self.x
             y = self.y
 
-        ax_slice.plot(y/units, I[:, np.argmin(abs(x-slice_x_pos))]**2)
-        ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
+        ax_slice.plot(y/units, I[:, np.argmin(abs(x-slice_x_pos))])
+        if square_root == False:
+            ax_slice.set_ylabel(r'Intensity $\left[W / m^2 \right]$')
+        else:
+            ax_slice.set_ylabel(r'Square Root Intensity $\left[ \sqrt{W / m^2 } \right]$')
 
         if grid == True:
             ax_slice.grid(alpha =0.2)
