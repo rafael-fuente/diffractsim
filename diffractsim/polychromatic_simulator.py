@@ -135,23 +135,6 @@ class PolychromaticField:
         return rgb
 
 
-    def scale_propagate(self, z, scale_factor):
-        """
-        #raise NotImplementedError(self.__class__.__name__ + '.scale_propagate')
-
-        two_steps_fresnel_method is implemented but it cannot be used with ApertureFromImage from now if the aperture is at z != 0. For this case,
-        use angular_spectrum_method instead.
-        """
-
-        self.z += z
-
-        self.steps += [two_steps_fresnel_method]
-        self.number_of_propagations += 1
-        self.steps_type += ['propagation']
-
-        scale_factor = 1
-        self.steps_args += [[z, scale_factor]]
-
 
     def get_colors_at_image_plane(self, pupil, M, zi, z0, scale_factor = 1):
         """

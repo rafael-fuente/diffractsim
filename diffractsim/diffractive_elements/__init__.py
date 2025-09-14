@@ -11,3 +11,4 @@ from .grating import BinaryGrating, PhaseGrating
 from .aperture_from_image import ApertureFromImage
 from .aperture_from_function import ApertureFromFunction
 
+from .SLM import SLM

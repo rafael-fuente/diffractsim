@@ -153,7 +153,11 @@ class FourierPhaseRetrieval():
         else:
             save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
 
-            
+    def save_retrieved_phase_as_file(self, name):
+        if backend_name == 'cupy':
+            np.save(name, self.retrieved_phase.get())
+        else:
+            np.save(name, self.retrieved_phase)
 
             
     def set_source_amplitude_from_function(self, function, extent_x, extent_y):

@@ -83,7 +83,12 @@ class MonochromaticField:
         """
         
         self.z += z
-        self.E = two_steps_fresnel_method(self, self.E, z, self.λ, scale_factor)
+        self.x, self.y , self.E = two_steps_fresnel_method(self, self.E, z, self.λ, scale_factor)
+        self.dx = self.x[1] - self.x[0]
+        self.dy = self.y[1] - self.y[0]
+        self.xx, self.yy = bd.meshgrid(self.x, self.y)
+        self.extent_x = self.Nx*self.dx
+        self.extent_y = self.Ny*self.dy
 
 
     def zoom_propagate(self, z, x_interval, y_interval):
@@ -107,7 +112,12 @@ class MonochromaticField:
         """
         
         self.z += z
-        self.E = bluestein_method(self, self.E, z, self.λ, x_interval, y_interval)
+        self.x, self.y , self.E = bluestein_method(self, self.E, z, self.λ, x_interval, y_interval)
+        self.dx = self.x[1] - self.x[0]
+        self.dy = self.y[1] - self.y[0]
+        self.xx, self.yy = bd.meshgrid(self.x, self.y)
+        self.extent_x = self.Nx*self.dx
+        self.extent_y = self.Ny*self.dy
 
 
     def get_farfield(self, alpha_interval = None, beta_interval = None):

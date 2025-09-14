@@ -3,15 +3,15 @@ from ..util.backend_functions import backend as jnp
 
 from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
 from ..util.image_handling import rescale_img_to_custom_coordinates
-from ..util.file_handling import load_graymap_image_as_array, save_phase_mask_as_image
-from ..util.image_handling import rescale_img_to_custom_coordinates
 from ..monochromatic_simulator import MonochromaticField
+from ..propagation_methods import two_steps_fresnel_method
 
 from pathlib import Path
 from PIL import Image
-from diffractsim.util.constants import *
+from ..util.constants import *
 import progressbar
 
+from ..util.image_handling import load_image_as_function
 
 
 
@@ -42,49 +42,33 @@ class CustomPhaseRetrieval():
         )
 
 
-    def set_source_amplitude(self, amplitude_mask_path, image_size = None):
+    def set_source_amplitude(self, source_function):
+        
+        self.source_function = source_function
+        self.source_amplitude = source_function(self.F.xx, self.F.yy)
+
+
+
+    def set_target_amplitude(self, target_function):
         
         #load the amplitude_mask image
-        img = Image.open(Path(amplitude_mask_path))
-        img = img.convert("RGB")
-
-        rescaled_img = rescale_img_to_custom_coordinates(img, image_size, self.F.extent_x, self.F.extent_y, self.F.Nx, self.F.Ny)
-        imgRGB = np.asarray(rescaled_img) / 255.0
-
-        t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
-        t = jnp.array(np.flip(t, axis = 0))
-
-        self.source_amplitude = t
-        self.source_size = image_size
+        self.target_function = target_function
+        self.target_amplitude = target_function(self.F.xx, self.F.yy)
 
 
+    def retrieve_phase_mask(self,  max_iter = 20, method = 'Adam-Optimizer', propagation_method = 'Angular-Spectrum', learning_rate = 1.0, custom_objective_function = None):
 
-    def set_target_amplitude(self, amplitude_mask_path, image_size = None):
-        
-        #load the amplitude_mask image
-        img = Image.open(Path(amplitude_mask_path))
-        img = img.convert("RGB")
-
-        rescaled_img = rescale_img_to_custom_coordinates(img, image_size, self.F.extent_x, self.F.extent_y, self.Nx, self.Ny)
-        imgRGB = np.asarray(rescaled_img) / 255.0
-
-        t = 0.2990 * imgRGB[:, :, 0] + 0.5870 * imgRGB[:, :, 1] + 0.1140 * imgRGB[:, :, 2]
-        t = jnp.array(np.flip(t, axis = 0))
-
-        self.target_amplitude = t
-
-
-    def retrieve_phase_mask(self,  max_iter = 20, method = 'Adam-Optimizer', propagation_method = 'Angular-Spectrum', learning_rate = 1.0):
-
-        implemented_phase_retrieval_methods = ('Stochastic-Gradient-Descent', 'Adam-Optimizer')
-        implemented_propagation_methods = ('Angular-Spectrum', 'Fresnel')
+        implemented_phase_retrieval_methods = ('Stochastic-Gradient-Descent', 'Adam-Optimizer', 'LBFGS')
+        implemented_propagation_methods = ('Custom', 'Angular-Spectrum', 'Fresnel')
 
         import jax.numpy as jnp 
         from jax import value_and_grad, grad
 
+        if propagation_method == 'Custom':
+            self.objective_function = custom_objective_function
+            self.grad_F = grad(objective_function)
 
-
-        if propagation_method == 'Angular-Spectrum':
+        elif propagation_method == 'Angular-Spectrum':
 
             def objective_function(phase):
 
@@ -95,21 +79,9 @@ class CustomPhaseRetrieval():
                 
                 return jnp.sum((jnp.abs(self.target_amplitude - jnp.abs(self.F.E))**2))
             
-            self.objective_function = grad(objective_function)
+            self.objective_function = objective_function
             self.grad_F = grad(objective_function)
 
-
-            def masked_objective_function(phase, mask):
-
-                phase = phase.reshape(self.Ny, self.Nx) 
-                self.F.E = self.source_amplitude*jnp.exp(1j*phase)
-                self.F.z = 0
-                self.F.propagate(z = self.z)
-                
-                f = (jnp.abs(self.target_amplitude - jnp.abs(self.F.E)))[mask]
-                return jnp.sum(f**2)
-
-            self.grad_F_masked = grad(masked_objective_function)
 
         elif propagation_method == 'Fresnel':
             
@@ -117,25 +89,13 @@ class CustomPhaseRetrieval():
                 phase = phase.reshape(self.Ny, self.Nx) 
                 self.F.E = self.source_amplitude*jnp.exp(1j*phase)
                 self.F.z = 0
-                self.F.scale_propagate(z = self.z, scale_factor=1)
+                x,y, E = two_steps_fresnel_method(self.F, self.F.E, self.z, self.F.λ, scale_factor=2)
                 
-                f = (jnp.abs(self.target_amplitude - jnp.abs(self.F.E)))
+                f = (jnp.abs(self.target_amplitude - jnp.abs(E)))
                 return jnp.sum(f**2)
 
-
+            self.objective_function = objective_function
             self.grad_F = grad(objective_function)
-
-            def masked_objective_function(phase, mask):
-
-                phase = phase.reshape(self.Ny, self.Nx) 
-                self.F.E = self.source_amplitude*jnp.exp(1j*phase)
-                self.F.z = 0
-                self.F.scale_propagate(z = self.z, scale_factor=1)
-                f = (jnp.abs(self.target_amplitude - jnp.abs(self.F.E)))
-                return jnp.sum(f**2)
-
-            self.grad_F_masked = grad(masked_objective_function)
-
 
 
 
@@ -144,46 +104,8 @@ class CustomPhaseRetrieval():
                 f"{method} has not been implemented. Use one of {implemented_propagation_methods}")
 
 
-        if method == 'Stochastic-Gradient-Descent':
 
-            """
-            Two batch stochastic gradient descent with momentum.
-            """
-
-            mass=0.9
-
-            
-
-            intial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
-
-            x = intial_phase
-            velocity = np.zeros_like(x)
-
-            bar = progressbar.ProgressBar()
-            for i in bar(range(max_iter)):
-
-                mask = jnp.array(np.random.randint(0,2,x.shape, dtype = bool))
-
-                g = self.grad_F_masked(x,mask)
-
-                velocity = mass * velocity - (1.0 - mass) * g
-                x = x + learning_rate * velocity
-
-
-                g = self.grad_F_masked(x,~mask)
-
-                velocity = mass * velocity - (1.0 - mass) * g
-                x = x + learning_rate * velocity
-
-
-                #print(objective_function(x))
-
-            i += 1
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-
-        elif method == 'Adam-Optimizer':
+        if method == 'Adam-Optimizer':
 
             """
             Reference: 
@@ -219,6 +141,57 @@ class CustomPhaseRetrieval():
                 #print(objective_function(x))
 
             i += 1
+            print("Final loss:", self.objective_function(x))
+
+            retrieved_phase = x.reshape(self.Ny, self.Nx)
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
+            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
+            
+        elif method == 'LBFGS':
+            import jaxopt
+
+            intial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude)))).ravel()
+
+            x = intial_phase
+            solver = jaxopt.LBFGS(fun=objective_function, maxiter=max_iter)
+            res = solver.run(intial_phase)
+            x, state = res
+
+
+            print("Final loss:", self.objective_function(x))
+
+            retrieved_phase = x.reshape(self.Ny, self.Nx)
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
+            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
+
+
+
+        elif method == 'Adam-JAX':
+            import jax
+            from jax import example_libraries
+            from jax.example_libraries import optimizers
+
+            phi_init = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
+            num_epochs = max_iter
+            
+            
+            @jax.jit
+            def step(i, opt_state):
+                phi = get_params(opt_state)
+                g = self.grad_F(phi)
+                return opt_update(i, g, opt_state)
+            
+            opt_init, opt_update, get_params = optimizers.adam(learning_rate)
+            opt_state = opt_init(phi_init)  # initialize φ
+
+            for i in range(num_epochs):
+                opt_state = step(i, opt_state)
+                if i % 50 == 0:
+                    current_loss = self.objective_function(get_params(opt_state))
+                    print(f"Epoch {i}, Loss: {current_loss:.6f}")
+
+            x = get_params(opt_state)
+            print("Final loss:", self.objective_function(x))
 
             retrieved_phase = x.reshape(self.Ny, self.Nx)
             self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
@@ -229,10 +202,9 @@ class CustomPhaseRetrieval():
                 f"{method} has not been implemented. Use one of {implemented_phase_retrieval_methods}")
 
 
-
-
         
     def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
-
-
         save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
+        
+    def save_retrieved_phase_as_file(self, name):
+        np.save(name, self.retrieved_phase)
