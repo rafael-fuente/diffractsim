@@ -33,6 +33,12 @@ def chirpz(x, A, W, M):
     from .backend_functions import backend as bd
     from .backend_functions import backend_name
 
+    if backend_name == 'jax': 
+        import jax
+        if jax.config.jax_enable_x64:
+            complex = jnp.complex128
+        else:
+            complex = jnp.complex64
 
     x = bd.asarray(x, dtype=complex)
     P = x.shape
