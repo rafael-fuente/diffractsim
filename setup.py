@@ -14,7 +14,7 @@ Take a look to the [videos](https://www.youtube.com/watch?v=Ft8CMEooBAE&list=PLY
 
 setup(
     name='diffractsim',
-    version='2.2.9',
+    version='2.2.11',
     description='A flexible diffraction simulator for exploring and visualizing physical optics',
     long_description=long_description,
     long_description_content_type="text/markdown",

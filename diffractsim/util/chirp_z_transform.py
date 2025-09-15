@@ -36,11 +36,13 @@ def chirpz(x, A, W, M):
     if backend_name == 'jax': 
         import jax
         if jax.config.jax_enable_x64:
-            complex = jnp.complex128
+            complex_ = bd.complex128
         else:
-            complex = jnp.complex64
+            complex_ = bd.complex64
+    else:
+        complex_ = complex
 
-    x = bd.asarray(x, dtype=complex)
+    x = bd.asarray(x, dtype=complex_)
     P = x.shape
 
     N = P[-1]
@@ -52,7 +54,7 @@ def chirpz(x, A, W, M):
     Y = bd.fft.fft(y, L)
 
     n = bd.arange(L, dtype=float)
-    v = bd.zeros(L, dtype=complex)
+    v = bd.zeros(L, dtype=complex_)
     if backend_name == 'jax':
         v = v.at[:M].set(bd.power(W, -n[:M] ** 2 / 2.))
         v = v.at[L-N+1:].set(bd.power(W, -(L - n[L-N+1:]) ** 2 / 2.))
