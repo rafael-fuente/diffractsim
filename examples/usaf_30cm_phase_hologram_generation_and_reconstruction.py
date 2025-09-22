@@ -3,7 +3,7 @@ diffractsim.set_backend("JAX")
 
 from diffractsim import MonochromaticField, mm, nm, cm
 from diffractsim import SLM, load_image_as_function, load_file_as_function, load_phase_as_function
-
+from diffractsim import CustomPhaseRetrieval
 
 #Note: CustomPhaseRetrieval requires autograd which is not installed by default with diffractsim. 
 # To install autograd, type: 'pip install -U jax'

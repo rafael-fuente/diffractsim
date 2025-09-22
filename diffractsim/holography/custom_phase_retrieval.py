@@ -74,10 +74,9 @@ class CustomPhaseRetrieval():
 
                 phase = phase.reshape(self.Ny, self.Nx) 
                 self.F.E = self.source_amplitude*jnp.exp(1j*phase)
-                self.F.z = 0
-                self.F.propagate(z = self.z)
-                
-                return jnp.sum((jnp.abs(self.target_amplitude - jnp.abs(self.F.E))**2))
+                newF = self.F.propagate(z = self.z)
+                return jnp.sum((jnp.abs(self.target_amplitude - jnp.abs(newF.E))**2))
+
             
             self.objective_function = objective_function
             self.grad_F = grad(objective_function)
@@ -88,11 +87,9 @@ class CustomPhaseRetrieval():
             def objective_function(phase):
                 phase = phase.reshape(self.Ny, self.Nx) 
                 self.F.E = self.source_amplitude*jnp.exp(1j*phase)
-                self.F.z = 0
-                x,y, E = two_steps_fresnel_method(self.F, self.F.E, self.z, self.F.λ, scale_factor=2)
+                newF = self.F.scale_propagate(z = self.z, scale_factor = 1)
                 
-                f = (jnp.abs(self.target_amplitude - jnp.abs(E)))
-                return jnp.sum(f**2)
+                return jnp.sum((jnp.abs(self.target_amplitude - jnp.abs(newF.E))**2))
 
             self.objective_function = objective_function
             self.grad_F = grad(objective_function)

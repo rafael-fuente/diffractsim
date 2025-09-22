@@ -2,7 +2,7 @@
 Rotational symmetric beam-shaping example:
 Generating a phase profile to shape a Gaussian beam to a ring-shaped profile
 
-The method is describen in: 
+The method is described in: 
 "Experimental demonstration of a beam shaping non-imaging metasurface," Opt. Express 33, 19119-19129 (2025)
 https://doi.org/10.1364/OE.559542
 """
@@ -27,14 +27,14 @@ def target_intensity(t):
 
     w_E = 600*um
     n = 2
-    E = (np.where(t< extent_target,  np.exp(-((np.abs(t)-1400*um)/w_E)**n), 0))
+    E = np.exp(-((np.abs(t)-1400*um)/w_E)**n)
     return E**2
 
 def source_intensity(r):
     # Source function. Gaussian beam with beam waist = w_I
 
     w_I = 1500*um 
-    E = (np.where(r< extent_input,  np.exp(-(r/w_I)**2), 0))
+    E = np.exp(-(r/w_I)**2)
     return E**2
 
 
@@ -74,7 +74,7 @@ F.add(SLM(
       simulation = F)
 )
 
-# propagate field 30*cm
+# propagate field 10*cm
 F.propagate(z)
 
 
