@@ -128,6 +128,18 @@ python phase_hologram_github_logo_generation_and_reconstruction.py
 [![animation](/images/github_logo.gif)](/examples/phase_hologram_github_logo_generation_and_reconstruction.py)
 
 
+Alternatively to phase retrieval based on iterative algorithms, for rotationally symmetric profiles, there is a high fidelity method for beam shaping using phase profiles, described in [https://doi.org/10.1364/OE.559542](https://doi.org/10.1364/OE.559542), which allows, for example, generating flat-top or ring-shaped beams from Gaussian beams. Diffractsim also provides an implementation of this method.
+
+```
+python flat-top_beam_generation.py
+```
+```
+python ring_shaped_beam_generation.py
+```
+
+[![N|Solid](/images/cylindrical_beam_shaping.png)](/examples/flat-top_beam_generation.py)
+
+
 ## Citing `Diffractsim`
 
 R. de la Fuente Herrezuelo, <i>diffractsim: A flexible python diffraction simulator</i>, GitHub (2022), https://doi.org/10.5281/zenodo.6147771

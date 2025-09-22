@@ -7,7 +7,7 @@ from .polychromatic_simulator import PolychromaticField
 from .monochromatic_simulator import MonochromaticField
 from . import colour_functions as cf
 from .polynomials import zernike_polynomial
-from .holography import FourierPhaseRetrieval, CustomPhaseRetrieval
+from .holography import FourierPhaseRetrieval, CustomPhaseRetrieval, RotationalPhaseDesign
 from .diffractive_elements import *
 from .light_sources import *
 
