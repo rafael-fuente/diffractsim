@@ -17,10 +17,17 @@ import diffractsim
 from diffractsim import MonochromaticField, nm, mm, cm,um, RectangularSlit
 diffractsim.set_backend("JAX") 
 from diffractsim.holography.rotational_symmetric_phase_design import RotationalPhaseDesign
-λ = 1.0*um  # 
+
+
+############################
+# set up design parameters #
+############################
+
+
+λ = 1.0*um # 
 z = 10*cm # distacne
 Nx, Ny = 2048,2048 #resolution
-extent_x = extent_y = W = 12*mm # extent of the design
+extent_x = extent_y =  12*mm # extent of the design
 extent_input, extent_target = extent_x/2, extent_x/2
 
 
@@ -58,14 +65,14 @@ RPD.save_design_phase_as_file('flat-top_hologram.npy')
 # Simulate the generated design #
 #################################
 
-from diffractsim import SLM, load_image_as_function, load_file_as_function, load_phase_as_function
+from diffractsim import SLM, GaussianBeam, load_image_as_function, load_file_as_function, load_phase_as_function
 
 F = MonochromaticField(
     wavelength=1.0*um, extent_x=extent_x, extent_y=extent_y, Nx=Ny, Ny=Nx, intensity = 0.001
 )
 
 # set source intensity as gaussian beam
-F.E = np.sqrt(source_intensity(np.sqrt(F.xx**2 + F.yy**2)))
+F.add(GaussianBeam(w0 = 2000*um ))
 
 I = F.get_intensity()
 F.plot_intensity(I, square_root = True, units = mm, grid = True, figsize = (14,5), slice_y_pos = 0*mm)
@@ -88,13 +95,19 @@ I = F.get_intensity()
 F.plot_intensity(I, units = mm, grid = True, figsize = (14,5), slice_y_pos = 0*mm)
 
 
+##################################
+# visualize longitudinal profile #
+##################################
 
 
-
-#visualize the longitudinal profile
 F = MonochromaticField(wavelength=λ, extent_x=extent_x, extent_y=extent_y, Nx=Nx, Ny=Ny, intensity = 0.001)
-F.rr = np.sqrt(F.xx**2 + F.yy**2)
-F.E = np.sqrt(source_intensity(F.rr))*np.exp(1j*(RPD.Φ_fun(F.rr)))
+F.add(GaussianBeam(w0 = 2000*um ))
+F.add(SLM(
+      phase_mask_function = load_phase_as_function("flat-top_hologram.npy", 
+      x_interval = (-extent_x/2, +extent_x/2),   y_interval = (-extent_y/2, +extent_y/2)), 
+      size_x =extent_x, size_y =extent_y, 
+      simulation = F)
+)
 
 longitudinal_profile_rgb, longitudinal_profile_E, extent = F.get_longitudinal_profile( start_distance = 0*cm , end_distance = z , steps = 80) 
 F.plot_longitudinal_profile_intensity(longitudinal_profile_E, extent)
