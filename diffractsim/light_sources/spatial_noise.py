@@ -41,7 +41,7 @@ class SpatialNoise(LightSource):
         fy = dfy*(bd.arange(Ny)-Ny//2)
         fxx, fyy = bd.meshgrid(fx, fy)
 
-        phase = bd.random.rand(Ny, Nx)*2*bd.pi
+        phase = np.random.rand(Ny, Nx)*2*bd.pi
 
         fp = bd.sqrt(fxx**2 + fyy**2)
         spatial_noise_freq = bd.exp(- 1/2 * ( (fp - self.f_mean)/ (self.f_spread))**2) * bd.exp(-1j*phase)
