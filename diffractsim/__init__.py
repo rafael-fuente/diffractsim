@@ -11,4 +11,12 @@ from .holography import FourierPhaseRetrieval, CustomPhaseRetrieval, RotationalP
 from .diffractive_elements import *
 from .light_sources import *
 
+# Vectorial field and TMM modules
+from .vectorial_field import VectorialField
+from .tmm import (
+    Layer, Stack, fresnel_coefficients, Material, DrudeMaterial,
+    IdealPolarizer, IdealRetarder, quarter_wave_plate, half_wave_plate,
+    spp_dispersion_relation, spp_effective_index, kretschmann_configuration, single_interface_spp
+)
+
 from .util.constants import *
