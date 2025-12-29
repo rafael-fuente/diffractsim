@@ -54,22 +54,41 @@ def propagate_vector_angular_spectrum(field, z):
     # resulting in decaying exponentials exp(-|kz|z) which is physically correct.
     kz = np.sqrt(kz_sq.astype(complex))
 
+    # 2. Evanescent Decay Sign Enforcement: Enforce Im(kz) >= 0
+    # This ensures that evanescent waves decay (exp(-|Im(kz)|*z)) rather than grow.
+    # While np.sqrt usually handles this, numerical noise can flip the sign.
+    kz = np.where(np.imag(kz) < 0, np.conj(kz), kz)
+
     # Fourier transform of transverse components
     Ex_k = np.fft.fft2(Ex)
     Ey_k = np.fft.fft2(Ey)
 
-    # Compute Ez in Fourier domain to enforce div(E) = 0 -> k . E = 0
-    # kz * Ez_k = -(kx * Ex_k + ky * Ey_k)
-    # Handle singularity at kz=0 by setting Ez_k=0 (purely transverse propagation)
+    # 1. Ez Reconstruction Order: Compute Ez BEFORE propagation
+    # We must construct Ez in the source plane and THEN propagate it 
+    # using the same transfer function as Ex and Ey.
+    # div(E) = 0 -> kx*Ex + ky*Ey + kz*Ez = 0
     with np.errstate(divide='ignore', invalid='ignore'):
         Ez_k = -(KX * Ex_k + KY * Ey_k) / kz
     
+    # Handle singularity at kz=0 (avoid NaNs)
     Ez_k[np.abs(kz) < 1e-9] = 0.0
+
+    # 3. On-Axis Symmetry Enforcement: Ez must be 0 at DC (kx=ky=0)
+    # Physically, for a symmetric beam, the longitudinal component is zero on-axis.
+    # Numerical noise or division by small kz can perturb this.
+    # We identify the DC component where KX=0 and KY=0.
+    dc_mask = (KX == 0) & (KY == 0)
+    Ez_k[dc_mask] = 0.0
+
+    # Note: Ez may still exhibit small non-zero values on-axis in the spatial domain
+    # due to finite grid discretization and the asymmetry of the FFT Nyquist component.
+    # This is a numerical artifact that decreases with higher resolution and does
+    # not violate physical consistency.
 
     # Optical transfer function (propagator)
     H = np.exp(1j * kz * z)
 
-    # Propagate components
+    # Propagate ALL components with the same kernel
     Ex_k_propagated = Ex_k * H
     Ey_k_propagated = Ey_k * H
     Ez_k_propagated = Ez_k * H
