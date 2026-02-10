@@ -12,3 +12,6 @@ from .aperture_from_image import ApertureFromImage
 from .aperture_from_function import ApertureFromFunction
 
 from .SLM import SLM
+
+from .linear_polarizer import LinearPolarizer
+from .waveplate import Waveplate, HalfWavePlate, QuarterWavePlate
