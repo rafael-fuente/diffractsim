@@ -19,7 +19,7 @@ All rights reserved.
 
 
 class MonochromaticField:
-    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1 * W / (m**2)):
+    def __init__(self, wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1 * W / (m**2), vectorial=False):
         """
         Initializes the field, representing the cross-section profile of a plane wave
 
@@ -49,14 +49,27 @@ class MonochromaticField:
 
         self.Nx = Nx
         self.Ny = Ny
-        self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+        self.vectorial = vectorial
+        if vectorial:
+            self.Ex = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity / 2)
+            self.Ey = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity / 2)
+            self.E = None
+        else:
+            self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+            self.Ex = None
+            self.Ey = None
         self.λ = wavelength
         self.z = 0
         self.cs = cf.ColourSystem(clip_method = 0)
         
     def add(self, optical_element):
-
-        self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
+        if not self.vectorial:
+            self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
+        elif hasattr(optical_element, 'get_E_components'):
+            self.Ex, self.Ey = optical_element.get_E_components(self.Ex, self.Ey, self.xx, self.yy, self.λ)
+        else:
+            self.Ex = optical_element.get_E(self.Ex, self.xx, self.yy, self.λ)
+            self.Ey = optical_element.get_E(self.Ey, self.xx, self.yy, self.λ)
 
 
     def propagate(self, z, scale_factor = 1):
@@ -66,7 +79,11 @@ class MonochromaticField:
         """
 
         self.z += z
-        self.E = angular_spectrum_method(self, self.E, z, self.λ, scale_factor = scale_factor)
+        if self.vectorial:
+            self.Ex = angular_spectrum_method(self, self.Ex, z, self.λ, scale_factor = scale_factor)
+            self.Ey = angular_spectrum_method(self, self.Ey, z, self.λ, scale_factor = scale_factor)
+        else:
+            self.E = angular_spectrum_method(self, self.E, z, self.λ, scale_factor = scale_factor)
 
 
     def scale_propagate(self, z, scale_factor):
@@ -257,7 +274,10 @@ class MonochromaticField:
         """compute RGB colors of the cross-section profile at the current distance"""
 
         # compute Field Intensity
-        I = bd.real(self.E * bd.conjugate(self.E))  
+        if self.vectorial:
+            I = bd.real(self.Ex * bd.conjugate(self.Ex) + self.Ey * bd.conjugate(self.Ey))
+        else:
+            I = bd.real(self.E * bd.conjugate(self.E))  
 
         rgb = self.cs.wavelength_to_sRGB(self.λ / nm, 10 * I.ravel()).T.reshape(
             (self.Ny, self.Nx, 3)
@@ -274,6 +294,8 @@ class MonochromaticField:
     def get_intensity(self):
         """compute field intensity of the cross-section profile at the current distance"""
 
+        if self.vectorial:
+            return bd.real(self.Ex * bd.conjugate(self.Ex) + self.Ey * bd.conjugate(self.Ey))
         return bd.real(self.E * bd.conjugate(self.E))  
 
 
