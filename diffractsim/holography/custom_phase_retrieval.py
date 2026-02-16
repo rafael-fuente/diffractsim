@@ -58,7 +58,7 @@ class CustomPhaseRetrieval():
 
     def retrieve_phase_mask(self,  max_iter = 20, method = 'Adam-Optimizer', propagation_method = 'Angular-Spectrum', learning_rate = 1.0, custom_objective_function = None):
 
-        implemented_phase_retrieval_methods = ('Stochastic-Gradient-Descent', 'Adam-Optimizer', 'LBFGS')
+        implemented_phase_retrieval_methods = ('Stochastic-Gradient-Descent', 'Adam-Optimizer')
         implemented_propagation_methods = ('Custom', 'Angular-Spectrum', 'Fresnel')
 
         import jax.numpy as jnp 
@@ -141,67 +141,11 @@ class CustomPhaseRetrieval():
             print("Final loss:", self.objective_function(x))
 
             retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-            
-        elif method == 'LBFGS':
-            import jaxopt
-
-            intial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude)))).ravel()
-
-            x = intial_phase
-            solver = jaxopt.LBFGS(fun=objective_function, maxiter=max_iter)
-            res = solver.run(intial_phase)
-            x, state = res
+            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2 * np.pi, retrieved_phase)
 
 
-            print("Final loss:", self.objective_function(x))
-
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-
-
-
-        elif method == 'Adam-JAX':
-            import jax
-            from jax import example_libraries
-            from jax.example_libraries import optimizers
-
-            phi_init = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
-            num_epochs = max_iter
-            
-            
-            @jax.jit
-            def step(i, opt_state):
-                phi = get_params(opt_state)
-                g = self.grad_F(phi)
-                return opt_update(i, g, opt_state)
-            
-            opt_init, opt_update, get_params = optimizers.adam(learning_rate)
-            opt_state = opt_init(phi_init)  # initialize φ
-
-            for i in range(num_epochs):
-                opt_state = step(i, opt_state)
-                if i % 50 == 0:
-                    current_loss = self.objective_function(get_params(opt_state))
-                    print(f"Epoch {i}, Loss: {current_loss:.6f}")
-
-            x = get_params(opt_state)
-            print("Final loss:", self.objective_function(x))
-
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-
-        else:
-            raise NotImplementedError(
-                f"{method} has not been implemented. Use one of {implemented_phase_retrieval_methods}")
-
-
+    def save_phase_mask(self, file_path):
+        if self.retrieved_phase is None:
+            raise ValueError("Phase mask not computed yet")
         
-    def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
-        save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
-        
-    def save_retrieved_phase_as_file(self, name):
-        np.save(name, self.retrieved_phase)
+        Image.fromarray((self.retrieved_phase / (2 * np.pi) + 0.5) * 255).convert('L').save(file_path)

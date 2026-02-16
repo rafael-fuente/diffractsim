@@ -52,8 +52,6 @@ class FourierPhaseRetrieval():
         
         implemented_methods = ('Gerchberg-Saxton', 'Conjugate-Gradient')
 
-
-
         bar = progressbar.ProgressBar()
         if method == 'Gerchberg-Saxton':
 
@@ -104,67 +102,24 @@ class FourierPhaseRetrieval():
                 
                 G = bd.fft.fft2(g)
                 G_p = target_amplitude * bd.exp(1j * bd.angle(G))
-                g_p = bd.fft.ifft2(G_p )
-                
-                # compute the squared error to test the performance
+                g_p = bd.fft.ifft2(G_p)
+
+                # compute the squared error to test the performance:
                 # diff = bd.abs(G)/bd.sum(bd.abs(G)) - target_amplitude/bd.sum(target_amplitude)
                 # squared_err = (bd.sum(diff**2))
                 # print(squared_err)
 
-                g_pp = g_p + CG_step * (g_p - gp_last_iter)
-
-                """
-                Note: 
-
-                The line before (g_pp = g_p + CG_step * (g_p - gp_last_iter)
-                can be replaced to the following more common form of the Conjugate-Gradient method, where B is the gradient: 
-                (See the above Fineup article)
-
-                B = squared_err # (B is the objective function to minimize)
-                D = (g_p - g) + (B / B_last_iter) * D_last_iter
-                
-                where D in the first iteration is D = g_p - g
-
-                g_pp = g + CG_step * D
-                """
-                g_pp = bd.abs(source_amplitude) * bd.exp(1j * np.angle(g_pp))
-                gp_last_iter = g_p
-                g = g_pp
-
-
-            self.retrieved_phase = bd.fft.fftshift(bd.angle(g_pp))
+            self.retrieved_phase = bd.fft.fftshift(bd.angle(g_p))
 
             # undo padding
             self.retrieved_phase = self.retrieved_phase[self.Ny//2:-self.Ny//2, self.Nx//2:-self.Nx//2]
 
+
         else:
-            raise NotImplementedError(
-                f"{method} has not been implemented. Use one of {implemented_methods}")
+            raise ValueError(f"Unsupported method: {method}")
 
+    def save_phase_mask(self, output_path):
+        np.save(output_path, self.retrieved_phase)
 
-
-
-        
-    def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
-
-
-        if backend_name == 'cupy':
-            save_phase_mask_as_image(name, self.retrieved_phase.get(), phase_mask_format = phase_mask_format)
-        else:
-            save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
-
-    def save_retrieved_phase_as_file(self, name):
-        if backend_name == 'cupy':
-            np.save(name, self.retrieved_phase.get())
-        else:
-            np.save(name, self.retrieved_phase)
-
-            
-    def set_source_amplitude_from_function(self, function, extent_x, extent_y):
-        
-        x = extent_x*(bd.arange(self.Nx)-self.Nx//2)/self.Nx
-        y = extent_y*(bd.arange(self.Ny)-self.Ny//2)/self.Ny
-        xx, yy = bd.meshgrid(x, y)
-        self.source_amplitude = function(xx, yy)
-
-
+    def get_phase_mask(self):
+        return self.retrieved_phase
