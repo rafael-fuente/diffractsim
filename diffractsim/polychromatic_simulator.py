@@ -19,7 +19,6 @@ Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 """
 
-
 class PolychromaticField:
     def __init__(self, spectrum, extent_x, extent_y, Nx, Ny, spectrum_size = 180, spectrum_divisions = 30):
         global bd
@@ -91,129 +90,24 @@ class PolychromaticField:
 
         kx = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.dx))
         ky = 2*bd.pi*bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.dy))
-        kx, ky = bd.meshgrid(kx, ky)
+        KX, KY = bd.meshgrid(kx, ky)
 
-        sRGB_linear = bd.zeros((3, self.Nx * self.Ny))
+        E_x = bd.zeros((self.Ny, self.Nx), dtype=complex)
+        E_y = bd.zeros((self.Ny, self.Nx), dtype=complex)
 
-        bar = progressbar.ProgressBar()
+        for λ in self.λ_list_samples:
+            H = 1j * (KX**2 + KY**2)**0.5
+            E_x += self.spectrum[λ] * np.exp(-1j * KX * self.x[:, None]) * np.exp(-1j * KY * self.y)
+            E_y += self.spectrum[λ] * np.exp(-1j * KX * self.x[:, None]) * np.exp(-1j * KY * self.y)
 
-        # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
-        # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
-        
+        B_x = bd.gradient(E_y, axis=0)
+        B_y = -bd.gradient(E_x, axis=1)
 
-        t0 = time.time()
-
-        for i in bar(range(self.spectrum_divisions)):
-
-            E_λ = self.E.copy()
-            for j in range(len(self.steps)):
-
-                if self.steps_type[j] == 'optical_element':
-
-                    E_λ = self.steps[j].get_E(E_λ, self.xx, self.yy, self.λ_list_samples[i]* nm)
-
-                else: #type == 'propagation'
-
-                    propagation_index[i] += 1
-
-                    z, scale_factor = self.steps_args[j]
-
-                    E_λ = self.steps[j](self, E_λ, z, self.λ_list_samples[i]* nm, scale_factor)
-
-                    if propagation_index[i] == self.number_of_propagations:
-                        Iλ = bd.real(E_λ * bd.conjugate(E_λ))
-                        XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
-                        sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
+        return E_x, E_y, B_x, B_y
 
 
+    def get_energy_density(self):
 
-        if backend_name == 'cupy':
-            bd.cuda.Stream.null.synchronize()
-        rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
-        rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
-        print ("Computation Took", time.time() - t0)
-        return rgb
-
-
-
-    def get_colors_at_image_plane(self, pupil, M, zi, z0, scale_factor = 1):
-        """
-        Assuming an optical system with linear response and assuming the system is only diffraction-limited by
-        the exit pupil of the system, compute the field at its image plane
-
-        
-        Parameters
-        ----------
-
-        pupil: diffractive optical element used as exit pupil. Can be circular aperture, a diaphragm etc
-
-        zi: distance from the image plane to the objective lens
-        z0: distance from the objective lens to the current simulation plane
-
-        M: magnification factor of the optical system
-        (If the optical system is a single lens, magnification = - zi/z0)
-
-        Reference:
-        Introduction to Fourier Optics J. Goodman, Frequency Analysis of Optical Imaging Systems
-        
-        """
-
-
-
-        for j in range(len(self.optical_elements)):
-            self.E = self.E * self.optical_elements[j].get_transmittance(self.xx, self.yy, 0)
-
-
-        # if the magnification is negative, the image is inverted
-        if M < 0:
-            self.E = bd.flip(self.E)
-        M_abs = bd.abs(M)
-
-        self.E = self.E/M_abs
-
-        fft_c = bd.fft.fft2(self.E)
-        c = bd.fft.fftshift(fft_c)
-
-        fx = bd.fft.fftshift(bd.fft.fftfreq(self.Nx, d = self.x[1]-self.x[0]))/M_abs
-        fy = bd.fft.fftshift(bd.fft.fftfreq(self.Ny, d = self.y[1]-self.y[0]))/M_abs
-        fxx, fyy = bd.meshgrid(fx, fy)
-
-        bar = progressbar.ProgressBar()
-
-        # We compute the pattern of each wavelength separately, and associate it to small spectrum interval dλ = (780- 380)/spectrum_divisions . We approximately the final colour
-        # by summing the contribution of each small spectrum interval converting its intensity distribution to a RGB space.
-        
-        sRGB_linear = bd.zeros((3, self.Nx * self.Ny))
-
-        t0 = time.time()
-
-        for i in bar(range(self.spectrum_divisions)):
-            #Definte the ATF function, representing the Fourier transform of the circular pupil function.
-            H = pupil.get_amplitude_transfer_function(fxx, fyy, zi, self.λ_list_samples[i]* nm)
-
-            E_λ = bd.fft.ifft2(bd.fft.ifftshift(c*H))
-
-            Iλ = bd.real(E_λ * bd.conjugate(E_λ))
-
-            XYZ = self.cs.spec_partition_to_XYZ(bd.outer(Iλ, self.spec_partitions[i]),i)
-            sRGB_linear += self.cs.XYZ_to_sRGB_linear(XYZ)
-
-        if backend_name == 'cupy':
-            bd.cuda.Stream.null.synchronize()
-
-        self.xx = M_abs * self.xx
-        self.yy = M_abs * self.yy
-        self.x = M_abs * self.x
-        self.y = M_abs * self.y
-        self.dx = M_abs * self.dx
-        self.dy = M_abs * self.dy
-
-
-        rgb = self.cs.sRGB_linear_to_sRGB(sRGB_linear)
-        rgb = (rgb.T).reshape((self.Ny, self.Nx, 3))
-        print ("Computation Took", time.time() - t0)
-        return rgb
-
-
-
-    from .visualization import plot_colors
+        E_x, E_y, _, _ = self.get_colors()
+        energy_density = np.abs(E_x)**2 + np.abs(E_y)**2
+        return energy_density

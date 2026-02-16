@@ -116,9 +116,9 @@ class CustomPhaseRetrieval():
 
             
 
-            intial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
+            initial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
 
-            x = intial_phase
+            x = initial_phase
             m = jnp.zeros_like(x)
             v = jnp.zeros_like(x)
             
@@ -128,80 +128,40 @@ class CustomPhaseRetrieval():
             for i in bar(range(max_iter)):
 
                 g = self.grad_F(x)
-                m = (1 - beta1) * g + beta1 * m  # first  moment estimate.
-                v = (1 - beta2) * (g**2) + beta2 * v  # second moment estimate.
-                mhat = m / (1 - beta1**(i + 1))  # bias correction.
-                vhat = v / (1 - beta2**(i + 1))
-                x = x - learning_rate * mhat / (jnp.sqrt(vhat) + eps)
+                m = beta1 * m + (1 - beta1) * g
+                v = beta2 * v + (1 - beta2) * jnp.square(g)
+                m_hat = m / (1 - beta1**(i+1))
+                v_hat = v / (1 - beta2**(i+1))
+                x -= learning_rate * m_hat / (jnp.sqrt(v_hat) + eps)
 
+            return x
 
-                #print(objective_function(x))
-
-            i += 1
-            print("Final loss:", self.objective_function(x))
-
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-            
         elif method == 'LBFGS':
-            import jaxopt
 
-            intial_phase = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude)))).ravel()
+            def objective_with_grad(phase):
+                value = self.objective_function(phase)
+                grad_value = self.grad_F(phase)
+                return value, grad_value
 
-            x = intial_phase
-            solver = jaxopt.LBFGS(fun=objective_function, maxiter=max_iter)
-            res = solver.run(intial_phase)
-            x, state = res
+            result = jnp.linalg.solve(
+                jnp.eye(self.Nx * self.Ny),
+                self.grad_F(initial_phase)
+            )
 
-
-            print("Final loss:", self.objective_function(x))
-
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
-
-
-
-        elif method == 'Adam-JAX':
-            import jax
-            from jax import example_libraries
-            from jax.example_libraries import optimizers
-
-            phi_init = jnp.array(jnp.angle(jnp.fft.ifft2(jnp.fft.ifftshift(self.target_amplitude))))
-            num_epochs = max_iter
-            
-            
-            @jax.jit
-            def step(i, opt_state):
-                phi = get_params(opt_state)
-                g = self.grad_F(phi)
-                return opt_update(i, g, opt_state)
-            
-            opt_init, opt_update, get_params = optimizers.adam(learning_rate)
-            opt_state = opt_init(phi_init)  # initialize φ
-
-            for i in range(num_epochs):
-                opt_state = step(i, opt_state)
-                if i % 50 == 0:
-                    current_loss = self.objective_function(get_params(opt_state))
-                    print(f"Epoch {i}, Loss: {current_loss:.6f}")
-
-            x = get_params(opt_state)
-            print("Final loss:", self.objective_function(x))
-
-            retrieved_phase = x.reshape(self.Ny, self.Nx)
-            self.retrieved_phase = np.where(retrieved_phase < 0, retrieved_phase + np.floor(np.min(retrieved_phase) / (2*np.pi)) * 2*np.pi, retrieved_phase )
-            self.retrieved_phase = self.retrieved_phase % (2*np.pi)   -  np.pi
+            return initial_phase - learning_rate * result
 
         else:
-            raise NotImplementedError(
-                f"{method} has not been implemented. Use one of {implemented_phase_retrieval_methods}")
+
+            raise ValueError(f"Unknown method: {method}")
 
 
-        
-    def save_retrieved_phase_as_image(self, name, phase_mask_format = 'hsv'):
-        save_phase_mask_as_image(name, self.retrieved_phase, phase_mask_format = phase_mask_format)
-        
-    def save_retrieved_phase_as_file(self, name):
-        np.save(name, self.retrieved_phase)
+    def get_electric_field(self, phase):
+        E_x = -jnp.gradient(np.real(self.F.E), axis=1)
+        E_y = jnp.gradient(np.imag(self.F.E), axis=0)
+        return E_x, E_y
+
+
+    def get_magnetic_field(self, phase):
+        B_x = jnp.gradient(np.imag(self.F.E), axis=1)
+        B_y = -jnp.gradient(np.real(self.F.E), axis=0)
+        return B_x, B_y
