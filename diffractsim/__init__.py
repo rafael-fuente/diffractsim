@@ -1,3 +1,6 @@
+from .vectorial_field import VectorialField
+from .optical_elements import LinearPolarizer, HalfWavePlate, QuarterWavePlate
+
 def display_stokes_parameters(field):
     """
     Display the Stokes parameters of the given field.
