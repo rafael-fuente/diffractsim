@@ -1,4 +1,3 @@
-from . import colour_functions as cf
 import matplotlib.pyplot as plt
 import time
 import progressbar
@@ -8,7 +7,12 @@ from .propagation_methods import angular_spectrum_method, two_steps_fresnel_meth
 import numpy as np
 from .util.backend_functions import backend as bd
 from .util.bluestein_FFT import bluestein_fft2
+from .polarization_states import polarization_state
+import matplotlib.pyplot as plt  # Added for plotting
 
+import numpy as np
+from .util.backend_functions import backend as bd
+from .util.bluestein_FFT import bluestein_fft2
 
 """
 MPL 2.0 Clause License 
@@ -19,38 +23,70 @@ All rights reserved.
 
 
 class MonochromaticField:
-    def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1 * W / (m**2)):
-        """
-        Initializes the field, representing the cross-section profile of a plane wave
+    class MonochromaticField:
+        def __init__(self, wavelength, extent_x, extent_y, Nx, Ny, intensity=0.1 * W / (m**2)):
+            """
+            Initializes the field, representing the cross-section profile of a plane wave
 
-        Parameters
-        ----------
-        wavelength: wavelength of the plane wave
-        extent_x: length of the rectangular grid 
-        extent_y: height of the rectangular grid 
-        Nx: horizontal dimension of the grid 
-        Ny: vertical dimension of the grid 
-        intensity: intensity of the field
-        """
-        global bd
-        global backend_name
-        from .util.backend_functions import backend as bd
-        from .util.backend_functions import backend_name
-        
-        self.extent_x = extent_x
-        self.extent_y = extent_y
+            Parameters
+            ----------
+            wavelength: wavelength of the plane wave
+            extent_x: length of the rectangular grid 
+            extent_y: height of the rectangular grid 
+            Nx: horizontal dimension of the grid 
+            Ny: vertical dimension of the grid 
+            intensity: intensity of the field
+            """
+            global bd
+            global backend_name
+            from .util.backend_functions import backend as bd
+            from .util.backend_functions import backend_name
 
-        self.dx = extent_x/Nx
-        self.dy = extent_y/Ny
+            self.extent_x = extent_x
+            self.extent_y = extent_y
 
-        self.x = self.dx*(bd.arange(Nx)-Nx//2)
-        self.y = self.dy*(bd.arange(Ny)-Ny//2)
-        self.xx, self.yy = bd.meshgrid(self.x, self.y)
+            self.dx = extent_x/Nx
+            self.dy = extent_y/Ny
 
-        self.Nx = Nx
-        self.Ny = Ny
-        self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
-        self.λ = wavelength
+            self.x = self.dx*(bd.arange(Nx)-Nx//2)
+            self.y = self.dy*(bd.arange(Ny)-Ny//2)
+            self.xx, self.yy = bd.meshgrid(self.x, self.y)
+
+            self.Nx = Nx
+    ```python
+            polarization_state = 's'  # Initialize polarization state to 's' (s-polarized), can be changed to 'p' for p-polarized or 'circular'
+            if polarization_state == 's':
+                self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+            elif polarization_state == 'p':
+                self.E = bd.zeros((self.Ny, self.Nx), dtype=complex) + 1j * bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+            elif polarization_state == 'circular':
+                theta = np.linspace(0, 2*np.pi, self.Nx)
+                r = np.linspace(0, 1, self.Ny)
+                theta_grid, r_grid = np.meshgrid(theta, r)
+                self.E = (np.cos(theta_grid) + 1j * np.sin(theta_grid)) * bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+
+        def plot_polarization_ellipse(self):
+            """
+            Plots the polarization ellipse of the field
+            """
+            # Calculate the Stokes parameters
+            I = bd.sum(self.E * bd.conj(self.E), axis=(0, 1))
+            Q = bd.sum((self.E[:, :, 0] * bd.conj(self.E[:, :, 0]) - self.E[:, :, 1] * bd.conj(self.E[:, :, 1])), axis=(0, 1))
+            U = bd.sum(2 * (self.E[:, :, 0] * bd.conj(self.E[:, :, 1])), axis=(0, 1))
+
+            # Calculate the angle of the polarization ellipse
+            theta = 0.5 * bd.arctan2(U, Q)
+
+            # Plot the polarization ellipse
+            plt.figure()
+            plt.plot(theta, I)
+            plt.xlabel('Polarization Angle (rad)')
+            plt.ylabel('Intensity')
+            plt.title('Polarization Ellipse')
+            plt.show()
+
+    ... [truncated]
+    ```python
         self.z = 0
         self.cs = cf.ColourSystem(clip_method = 0)
         

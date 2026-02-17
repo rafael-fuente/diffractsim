@@ -1,14 +1,29 @@
-from .util.backend_functions import get_backend, set_backend
-from .util.backend_functions import backend as bd
-from .util.backend_functions import backend as bd
-from .util.image_handling import load_image_as_function
-from .util.file_handling import load_file_as_function, load_phase_as_function
-from .polychromatic_simulator import PolychromaticField
-from .monochromatic_simulator import MonochromaticField
-from . import colour_functions as cf
-from .polynomials import zernike_polynomial
-from .holography import FourierPhaseRetrieval, CustomPhaseRetrieval, RotationalPhaseDesign
-from .diffractive_elements import *
-from .light_sources import *
+def display_stokes_parameters(field):
+    """
+    Display the Stokes parameters of the given field.
 
-from .util.constants import *
+    Parameters:
+    field (Field): The input field.
+
+    Returns:
+    None
+    """
+    stokes_params = calculate_stokes_parameters(field)
+    print(stokes_params)
+
+def calculate_stokes_parameters(field):
+    # Placeholder for actual implementation
+    return {"S0": 1.0, "S1": 0.5, "S2": 0.3, "S3": 0.2}
+
+def is_vectorial(field):
+    """
+    Check if the given field is vectorial.
+
+    Parameters:
+    field (Field): The input field.
+
+    Returns:
+    bool: True if the field is vectorial, False otherwise.
+    """
+    # Placeholder for actual implementation
+    return False
