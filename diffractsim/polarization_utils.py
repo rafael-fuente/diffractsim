@@ -5,7 +5,6 @@ Copyright (c) 2022, Rafael de la Fuente
 All rights reserved.
 """
 
-from . import colour_functions as cf
 import matplotlib.pyplot as plt
 import time
 import progressbar
@@ -15,6 +14,7 @@ from .propagation_methods import angular_spectrum_method, two_steps_fresnel_meth
 import numpy as np
 from .util.backend_functions import backend as bd
 from .util.bluestein_FFT import bluestein_fft2
+from .vectorial_field import VectorialField  # NEW IMPORT
 
 class MonochromaticField:
     def __init__(self,  wavelength, extent_x, extent_y, Nx, Ny, intensity = 0.1 * W / (m**2)):
@@ -34,7 +34,7 @@ class MonochromaticField:
         global backend_name
         from .util.backend_functions import backend as bd
         from .util.backend_functions import backend_name
-        
+
         self.extent_x = extent_x
         self.extent_y = extent_y
 
@@ -51,7 +51,7 @@ class MonochromaticField:
         self.λ = wavelength
         self.z = 0
         self.cs = cf.ColourSystem(clip_method = 0)
-        
+
     def add(self, optical_element):
 
         self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
@@ -79,7 +79,8 @@ def analyze_polarization(jones_vector):
 # Placeholder for polarization visualization
 def plot_polarization(jones_vector):
     # Example: Plot the Jones vector
-    plt.figure()
+
+... [truncated]
     plt.quiver(jones_vector[0], jones_vector[1])
     plt.xlabel('E_x')
     plt.ylabel('E_y')
@@ -94,3 +95,6 @@ def transform_polarization(field, transformation_matrix):
     Jy_transformed = bd.dot(transformation_matrix[1], [Jx, Jy])
     return Jx_transformed, Jy_transformed
 ```
+
+# Placeholder for polarization calculations
+        pass

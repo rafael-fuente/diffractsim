@@ -313,7 +313,6 @@ class MonochromaticField:
         return bd.real(self.E * bd.conjugate(self.E))  
 
 
-
     def compute_colors_at(self, z):
         """propagate the field to a distance equal to z and compute the RGB colors of the beam profile"""
 
@@ -352,8 +351,6 @@ class MonochromaticField:
         self.x = self.dx*(bd.arange(Nx)-Nx//2)
         self.y = self.dy*(bd.arange(Ny)-Ny//2)
         self.xx, self.yy = bd.meshgrid(self.x, self.y)
-
-
 
 
     def get_longitudinal_profile(self, start_distance, end_distance, steps, scale_factor = 1):
@@ -427,3 +424,74 @@ class MonochromaticField:
 
 
     from .visualization import plot_colors, plot_phase, plot_intensity, plot_longitudinal_profile_colors, plot_longitudinal_profile_intensity, plot_farfield, plot_farfield_spherical_coordinates
+
+# Lines 1-120 of diffractsim/monochromatic_simulator.py
+import matplotlib.pyplot as plt
+import time
+import progressbar
+from .util.constants import *
+from .propagation_methods import angular_spectrum_method, two_steps_fresnel_method, bluestein_method, apply_transfer_function
+
+import numpy as np
+from .util.backend_functions import backend as bd
+from .util.bluestein_FFT import bluestein_fft2
+from .polarization_states import polarization_state
+import matplotlib.pyplot as plt  # Added for plotting
+
+import numpy as np
+from .util.backend_functions import backend as bd
+from .util.bluestein_FFT import bluestein_fft2
+from vectorial_field import VectorialField  # NEW line to import VectorialField
+
+"""
+MPL 2.0 Clause License 
+
+Copyright (c) 2022, Rafael de la Fuente
+All rights reserved.
+"""
+
+class MonochromaticField:
+    class MonochromaticField:
+        def __init__(self, wavelength, extent_x, extent_y, Nx, Ny, intensity=0.1 * W / (m**2)):
+            """
+            Initializes the field, representing the cross-section profile of a plane wave
+
+            Parameters
+            ----------
+            wavelength: wavelength of the plane wave
+            extent_x: length of the rectangular grid 
+            extent_y: height of the rectangular grid 
+            Nx: horizontal dimension of the grid 
+            Ny: vertical dimension of the grid 
+            intensity: intensity of the field
+            """
+            global bd
+            global backend_name
+            from .util.backend_functions import backend as bd
+            from .util.backend_functions import backend_name
+
+            self.extent_x = extent_x
+            self.extent_y = extent_y
+
+            self.dx = extent_x/Nx
+            self.dy = extent_y/Ny
+
+            self.x = self.dx*(bd.arange(Nx)-Nx//2)
+            self.y = self.dy*(bd.arange(Ny)-Ny//2)
+            self.xx, self.yy = bd.meshgrid(self.x, self.y)
+
+            self.Nx = Nx
+    
+
+    def propagate(self, propagation_distance):
+        """
+        Propagates the field using the angular spectrum method.
+
+        Parameters
+        ----------
+        propagation_distance : float
+            The distance over which to propagate the field.
+        """
+        from .propagation_methods import angular_spectrum_method
+
+        self.E = angular_spectrum_method(self.E, self.wavelength, propagation_distance)
