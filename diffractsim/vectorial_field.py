@@ -1,4 +1,6 @@
 import numpy as np
+import numpy as np
+import cmath
 
 class VectorialField:
     def __init__(self, x, y, z, Ex=None, Ey=None):
@@ -32,6 +34,12 @@ class VectorialField:
 
     def __str__(self):
         return f"VectorialField({self.x}, {self.y}, {self.z})"
+
+    def get_intensity(self):
+        if self.Ex is not None and self.Ey is not None:
+            return np.abs(self.Ex)**2 + np.abs(self.Ey)**2
+        else:
+            return 0.0
 
 def initialize_fields(self, Ex=None, Ey=None):
         if Ex is None:

@@ -1,8 +1,14 @@
 from .vectorial_field import VectorialField
+from .vector_field import VectorField
+from .vectorial_field import VectorialField
 from .optical_elements import LinearPolarizer, HalfWavePlate, QuarterWavePlate, OpticalElement
+if 'VectorField' not in __all__:
+    __all__.append('VectorField')
+if 'VectorialField' not in __all__:
+    __all__.append('VectorialField')
 
 # Add necessary imports
-from .optical_elements import VectorialField, LinearPolarizer, HalfWavePlate, QuarterWavePlate, OpticalElement
+from .optical_elements import LinearPolarizer, HalfWavePlate, QuarterWavePlate, OpticalElement
 
 def display_stokes_parameters(field):
     """
