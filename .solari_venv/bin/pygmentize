@@ -1,0 +1,6 @@
+#!/srv/solari/sandbox/bounty_runner/SBR_rafael-fue_diffractsim_69/repo/.solari_venv/bin/python3
+import sys
+from pygments.cmdline import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
