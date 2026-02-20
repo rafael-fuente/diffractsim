@@ -127,3 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.venv/
+node_modules/
+*.pyc
+.solari_*
+
+# Auto-added by Solari to prevent build artifact commits
+.solari_deps_installed
+.gradle/
+*.class
+.idea/
+.vscode/
