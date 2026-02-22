@@ -9,6 +9,8 @@ All rights reserved.
 """
 
 def two_steps_fresnel_method(simulation, E, z, λ, scale_factor):
+    """Propagates vector field components separately"""
+    Ex, Ey = E
     """
     Compute the field in distance equal to z with the two step Fresnel propagator, rescaling the field in the new coordinates
     with extent equal to:
@@ -36,4 +38,7 @@ def two_steps_fresnel_method(simulation, E, z, λ, scale_factor):
     E = bd.fft.ifft2(bd.fft.ifftshift( bd.exp(- 1j * np.pi * λ * z * L1/L2 * (fx**2 + fy**2))  *  fft_E) )
 
     E = L1/L2 * bd.exp(1j * 2*np.pi/λ * z   - 1j * np.pi/(z * λ)* (L1-L2)/L2 * ((simulation.xx*scale_factor)**2 + (simulation.yy*scale_factor)**2)) * E
-    return simulation.x*scale_factor,  simulation.y*scale_factor, E
+    # Propagate each polarization component
+    Ex_prop = propagate_component(Ex, simulation, z, λ, scale_factor)
+    Ey_prop = propagate_component(Ey, simulation, z, λ, scale_factor)
+    return simulation.x*scale_factor, simulation.y*scale_factor, (Ex_prop, Ey_prop)

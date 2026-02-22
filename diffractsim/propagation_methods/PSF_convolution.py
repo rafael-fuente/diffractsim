@@ -9,6 +9,8 @@ All rights reserved.
 """
 
 def PSF_convolution(simulation, E, λ, PSF, scale_factor = 1):
+    """Convolves vector field components separately"""
+    Ex, Ey = E
     """
     Convolve the field with a the given coherent point spread function (PSF) sampled in spatial simulation coordinates.
 
@@ -46,7 +48,10 @@ def PSF_convolution(simulation, E, λ, PSF, scale_factor = 1):
         simulation.dy = simulation.dy*scale_factor
         simulation.extent_x = simulation.extent_x*scale_factor
         simulation.extent_y = simulation.extent_y*scale_factor
-        return E
+        # Convolve each polarization component
+        Ex_conv = convolve_component(Ex, simulation, λ, PSF, scale_factor)
+        Ey_conv = convolve_component(Ey, simulation, λ, PSF, scale_factor)
+        return Ex_conv, Ey_conv
 
 
 
