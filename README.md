@@ -21,6 +21,9 @@ The basic use of this simulator using the angular spectrum method is described i
 
 ## Installation
 
+```
+pip install diffractsim
+```
 
 Alternatively, to download the examples and the apertures as well, you can also build from source by cloning the repository and running from the main folder project on the command prompt:
 ```
@@ -127,8 +130,7 @@ python phase_hologram_github_logo_generation_and_reconstruction.py
 
 [![animation](/images/github_logo.gif)](/examples/phase_hologram_github_logo_generation_and_reconstruction.py)
 
-
-Alternatively to phase retrieval based on iterative algorithms, for rotationally symmetric profiles, there is a high fidelity method for beam shaping using phase profiles, described in [https://doi.org/10.1364/OE.559542](https://doi.org/10.1364/OE.559542), which allows, for example, generating flat-top or ring-shaped beams from Gaussian beams. Diffractsim also provides an implementation of this method.
+In addition to phase retrieval based on iterative algorithms, for rotationally symmetric profiles, there is a high fidelity method for beam shaping using phase profiles, described in [https://doi.org/10.1364/OE.559542](https://doi.org/10.1364/OE.559542), which allows, for example, generating flat-top or ring-shaped beams from Gaussian beams. Diffractsim also provides an implementation of this method.
 
 ```
 python flat-top_beam_generation.py
@@ -139,6 +141,9 @@ python ring_shaped_beam_generation.py
 
 [![N|Solid](/images/cylindrical_beam_shaping.png)](/examples/flat-top_beam_generation.py)
 
+
+A generalization of this method for non-rotationally symmetric profiles is implemented using physics-informed neural networks in this repository, in which Diffractsim is also used for validation of the generated phase profiles:
+- [Physics-Informed Neural Networks for Optimal Beam Shaping in Flat Optics](https://github.com/rafael-fuente/pinn-shaper)
 
 ## Citing `Diffractsim`
 
