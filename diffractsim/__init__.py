@@ -5,6 +5,7 @@ from .util.image_handling import load_image_as_function
 from .util.file_handling import load_file_as_function, load_phase_as_function
 from .polychromatic_simulator import PolychromaticField
 from .monochromatic_simulator import MonochromaticField
+from .vectorial_simulator import VectorialField
 from . import colour_functions as cf
 from .polynomials import zernike_polynomial
 from .holography import FourierPhaseRetrieval, CustomPhaseRetrieval, RotationalPhaseDesign
