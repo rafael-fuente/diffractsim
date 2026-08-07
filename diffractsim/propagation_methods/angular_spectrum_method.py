@@ -10,6 +10,8 @@ All rights reserved.
 """
 
 def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
+    """Propagates vector field components separately"""
+    Ex, Ey = E
     """
     Compute the field in distance equal to z with the angular spectrum method. 
     By default (scale_factor = 1), the ouplut plane coordinates is the same than the input.
@@ -57,5 +59,8 @@ def angular_spectrum_method(simulation, E, z, λ, scale_factor = 1):
         simulation.extent_x = simulation.extent_x*scale_factor
         simulation.extent_y = simulation.extent_y*scale_factor
 
-    return E
+    # Propagate each polarization component
+    Ex_prop = propagate_component(Ex, simulation, z, λ, scale_factor)
+    Ey_prop = propagate_component(Ey, simulation, z, λ, scale_factor)
+    return Ex_prop, Ey_prop
 

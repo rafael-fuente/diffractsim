@@ -23,8 +23,10 @@ class DOE(ABC):
         return DOE_mix(self, DOE2)
 
     def get_E(self, E, xx, yy, λ):
-        # by default the behavior of all DOE is linear in amplitude
-        return E*self.get_transmittance(xx, yy, λ)
+        """Applies transmittance to each polarization component"""
+        Ex, Ey = E
+        t = self.get_transmittance(xx, yy, λ)
+        return Ex*t, Ey*t
 
     def get_coherent_PSF(self,  xx, yy, z, λ):
         """ 

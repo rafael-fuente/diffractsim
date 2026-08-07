@@ -49,14 +49,18 @@ class MonochromaticField:
 
         self.Nx = Nx
         self.Ny = Ny
-        self.E = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+        # Initialize field as vector field with x and y components
+        self.Ex = bd.ones((self.Ny, self.Nx)) * bd.sqrt(intensity)
+        self.Ey = bd.zeros((self.Ny, self.Nx))
         self.λ = wavelength
         self.z = 0
         self.cs = cf.ColourSystem(clip_method = 0)
         
     def add(self, optical_element):
-
-        self.E = optical_element.get_E(self.E, self.xx, self.yy, self.λ)
+        # Handle vector field addition
+        Ex_new, Ey_new = optical_element.get_E((self.Ex, self.Ey), self.xx, self.yy, self.λ)
+        self.Ex = Ex_new
+        self.Ey = Ey_new
 
 
     def propagate(self, z, scale_factor = 1):
@@ -267,14 +271,15 @@ class MonochromaticField:
 
     def get_field(self):
         """get field of the cross-section profile at the current distance"""
-
-        return self.E
+        return self.Ex, self.Ey
 
 
     def get_intensity(self):
         """compute field intensity of the cross-section profile at the current distance"""
-
-        return bd.real(self.E * bd.conjugate(self.E))  
+        # Intensity is sum of intensities of each polarization component
+        Ix = bd.real(self.Ex * bd.conjugate(self.Ex))
+        Iy = bd.real(self.Ey * bd.conjugate(self.Ey))
+        return Ix + Iy
 
 
 

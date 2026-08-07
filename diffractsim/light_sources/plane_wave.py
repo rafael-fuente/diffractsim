@@ -11,5 +11,8 @@ class PlaneWave(LightSource):
         from ..util.backend_functions import backend as bd
 
     def get_E(self, E, xx, yy, λ):
-        
-        return bd.ones_like(xx) * E
+        """Returns a plane wave with uniform polarization"""
+        # Return a vector field with x and y components
+        Ex = bd.ones_like(xx) * E
+        Ey = bd.zeros_like(xx)
+        return Ex, Ey
